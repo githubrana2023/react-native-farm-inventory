@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome6 } from "@expo/vector-icons";
 import { PortalHost } from "@rn-primitives/portal";
 import { Tabs } from "expo-router";
 import 'react-native-reanimated';
@@ -35,7 +35,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Home",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="home" size={size} color={color} />
+        <FontAwesome6 name="house" size={size} color={color} />
       )
     },
   },
@@ -45,7 +45,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Items List",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="list" size={size} color={color} />
+        <FontAwesome6 name="list" size={size} color={color} />
       )
     },
   },
@@ -55,7 +55,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Price",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="local-offer" size={size} color={color} />
+        <FontAwesome6 name="tags" size={size} color={color} />
       )
     },
   },
@@ -65,7 +65,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Search",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="search" size={size} color={color} />
+        <FontAwesome6 name="magnifying-glass" size={size} color={color} />
       )
     },
   },
@@ -75,7 +75,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Files",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="description" size={size} color={color} />
+        <FontAwesome6 name="file-lines" size={size} color={color} />
       )
     },
   },
@@ -85,7 +85,7 @@ const rootLayoutScreens: RootLayoutScreens[] = [
     options: {
       tabBarLabel: "Settings",
       tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="settings" size={size} color={color} />
+        <FontAwesome6 name="gear" size={size} color={color} />
       )
     },
   },
