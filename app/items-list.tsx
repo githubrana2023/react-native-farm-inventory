@@ -3,12 +3,10 @@ import ScannedItemCard from '@/components/scanned-item-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { items } from '@/constants'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import React from 'react'
 import { FlatList, Text, View } from 'react-native'
 
 const ItemsList = () => {
-  const tabBarHeight = useBottomTabBarHeight()
 
   return (
     <Container>

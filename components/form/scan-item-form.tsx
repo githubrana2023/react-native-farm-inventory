@@ -1,8 +1,8 @@
-import { ScanItemFormData } from "@/schema/scan-item-form-schema"
+import { ScanItemFormData, scanItemFormSchema } from "@/schema/scan-item-form-schema"
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from "react-hook-form"
 import { Button, Text, TextInput, View } from "react-native"
 import { Input } from "../ui/input"
-
 
 export default function ScanItemForm() {
     const {
@@ -10,6 +10,7 @@ export default function ScanItemForm() {
         handleSubmit,
         formState: { errors },
     } = useForm<ScanItemFormData>({
+        resolver: zodResolver(scanItemFormSchema),
         defaultValues: {
             barcode: "",
             uom: "",
@@ -35,7 +36,7 @@ export default function ScanItemForm() {
                     />
                 )}
             />
-            {errors.barcode && <Text>This is required.</Text>}
+            {errors.barcode && <Text>{errors.barcode.message}.</Text>}
 
             <Controller
                 control={control}
@@ -49,7 +50,7 @@ export default function ScanItemForm() {
                     />
                 )}
             />
-            {errors.uom && <Text>This is required.</Text>}
+            {errors.uom && <Text>{errors.uom.message}.</Text>}
 
 
             <Controller
@@ -65,7 +66,7 @@ export default function ScanItemForm() {
                     />
                 )}
             />
-            {errors.quantity && <Text>This is required.</Text>}
+            {errors.quantity && <Text>{errors.quantity.message}quantity.</Text>}
 
             <Button title="Submit" onPress={onSubmit} />
         </View>

@@ -16,7 +16,7 @@ type IconName = {
 
 
 
-export const DetailsRow = ({    
+export const DetailsRow = ({
     icon: { library, name },
     label,
     value
@@ -34,11 +34,12 @@ export const DetailsRow = ({
                     <MaterialIcons name={name} color={"#124DA1"} size={20} />
                 )}
             </View>
+
             <View className="flex-1">
-                <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Text className="text-xs font-semibold uppercase text-muted-foreground">
                     {label}
                 </Text>
-                <Text className="flex-1 flex-wrap text-sm leading-relaxed font-semibold">
+                <Text className="text-sm text-foreground">
                     {value}
                 </Text>
             </View>
