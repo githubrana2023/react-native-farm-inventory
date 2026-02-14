@@ -1,4 +1,5 @@
 import { barcodes } from "../barcode";
+import { items } from "../item";
 import { getItemById, Item } from "./item";
 import { getSupplierById } from "./supplier";
 import { getUnitById } from "./unit";
@@ -8,6 +9,9 @@ export const getBarcodeById = (id: string) => {
 }
 
 export const getBarcodesByItemCode = (itemCode: string) => {
+    const item = items.find(i=>i.item_code===itemCode)
+    if(!item) return
+
     return barcodes.map(barcode => {
         const unit = getUnitById(barcode.unitId);
 
@@ -15,7 +19,7 @@ export const getBarcodesByItemCode = (itemCode: string) => {
             ...barcode,
             ...unit
         }
-    });
+    }).filter(b=>b.itemId===item.id);
 }
 
 export const getItemByBarcode = (barcode: string):{ data: null | Item; message: string } => {
@@ -37,7 +41,7 @@ export const getItemByBarcode = (barcode: string):{ data: null | Item; message: 
         return { message: "Supplier not found", data: null };
     }
 
-    const barcodesByItemCode = getBarcodesByItemCode(item.item_code).filter(b=>b.unitId!=unit.id)
+    const barcodesByItemCode = getBarcodesByItemCode(item.item_code)?.filter(b=>b.unitId!=unit.id)||[]
 
 
     const units = barcodesByItemCode.map(barcode => {

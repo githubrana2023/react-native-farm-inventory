@@ -41,7 +41,7 @@ export default function Index() {
           <View>
             <Text>
               {
-                JSON.stringify(scannedItem, null, 2)
+                JSON.stringify(scannedItem)
               }
             </Text>
           </View>

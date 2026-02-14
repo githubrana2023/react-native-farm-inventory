@@ -27,12 +27,12 @@ export const getItemByItemCode = (itemCode: string): { data: null | Item; messag
     if (!item) {
         return { message: "Item not found", data: null };
     }
-    const barcodes = getBarcodesByItemCode(item.item_code)
+    const barcodes = getBarcodesByItemCode(item.item_code)||[]
     const supplier = getSupplierById(item.supplierId);
     if (!supplier) {
         return { message: "Supplier not found", data: null };
     }
-    const units = barcodes.map(barcode => {
+    const units = barcodes?.map(barcode => {
 
         return {
             uom: barcode.unitName,
