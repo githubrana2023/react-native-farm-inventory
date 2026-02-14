@@ -105,7 +105,10 @@ export default function ScanItemForm() {
                                     {/* Clear Button */}
                                     {field.value.length > 0 ? (
                                         <View className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                                            <TouchableOpacity onPress={() => field.onChange('')}>
+                                            <TouchableOpacity onPress={() => {
+                                                field.onChange('')
+                                                dispatch(clearItem())
+                                            }}>
                                                 <Feather name="x-circle" size={24}/>
                                             </TouchableOpacity>
                                         </View>

@@ -1,3 +1,5 @@
+import 'react-native-get-random-values';
+
 import Container from "@/components/container";
 import ScanItemForm from "@/components/form/scan-item-form";
 import ScannedItemCard from "@/components/scanned-item-card";
@@ -8,6 +10,7 @@ import { FlatList, View } from "react-native";
 import { db } from "@/drizzle/db";
 import migrations from "@/drizzle/migrations/migrations";
 
+import { ItemDetails } from "@/components/item-details";
 import { Text } from "@/components/ui/text";
 import { items } from "@/constants";
 import { useScannedItem } from "@/hooks/redux";
@@ -38,13 +41,14 @@ export default function Index() {
         <View className="w-full">
           <ScanItemForm />
           <Separator className="my-3" />
-          <View>
-            <Text>
-              {
-                JSON.stringify(scannedItem)
-              }
-            </Text>
-          </View>
+          {
+            scannedItem && (
+              <>
+                <ItemDetails header={{ title: "Item Details", description: "Scanned item" }} item={scannedItem} />
+                <Separator className="my-3" />
+              </>
+            )
+          }
         </View>
       </View>
 
