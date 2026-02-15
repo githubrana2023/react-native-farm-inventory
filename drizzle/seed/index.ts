@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { db } from "../db";
 import { itemTable, unitTable } from "../schema";
 
@@ -83,8 +84,23 @@ const seedDatabase = async () => {
 export default async function main() {
     try {
         // await seedDatabase();
+        await dropAllTables()
         console.log('Database seeded successfully!');
     } catch (error) {
         console.error('Error seeding database:', error);
     }
+}
+
+
+
+export async function dropAllTables() {
+  const tables = await db.all<{ name: string }>(
+    sql`SELECT name FROM sqlite_master WHERE type='table';`
+  )
+
+  for (const table of tables) {
+    if (table.name !== 'sqlite_sequence') {
+      await db.run(sql.raw(`DROP TABLE IF EXISTS ${table.name};`))
+    }
+  }
 }

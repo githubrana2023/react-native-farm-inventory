@@ -24,6 +24,15 @@ CREATE TABLE `users_table` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `users_table_id_unique` ON `users_table` (`id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `users_table_item_code_unique` ON `users_table` (`item_code`);--> statement-breakpoint
+CREATE TABLE `stored_scanned_item` (
+	`id` text PRIMARY KEY NOT NULL,
+	`barcode_id` text NOT NULL,
+	`quantity` real NOT NULL,
+	FOREIGN KEY (`barcode_id`) REFERENCES `barcode`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `stored_scanned_item_id_unique` ON `stored_scanned_item` (`id`);--> statement-breakpoint
 CREATE TABLE `supplier` (
 	`id` text PRIMARY KEY NOT NULL,
 	`supplier_code` text NOT NULL,

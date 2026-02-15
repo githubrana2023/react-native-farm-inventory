@@ -26,7 +26,7 @@ type ScannedItemCardProps = {
 
 const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number], enableActionBtn?: boolean }) => {
     const [isEditState, setIsEditState] = React.useState(false)
-    const [isEditState, setIsEditState] = React.useState<(null)
+    const quantityRef = React.useRef<any>(null)
 
     const form = useForm({
         defaultValues: {
@@ -126,6 +126,7 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                                     uom={item.uom}
                                     onPress={() => {
                                         setIsEditState(prev => !prev)
+                                        quantityRef.current?.focus()
                                     }}
                                 />
                             )}

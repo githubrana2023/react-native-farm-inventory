@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "1f340b7a-309e-49a4-8b1c-fec839795c4e",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "7c65bf61-8b60-4618-9fe1-317e4786704b",
+  "prevId": "1f340b7a-309e-49a4-8b1c-fec839795c4e",
   "tables": {
     "barcode": {
       "name": "barcode",
@@ -81,10 +81,10 @@
         }
       },
       "foreignKeys": {
-        "barcode_item_code_id_users_table_id_fk": {
-          "name": "barcode_item_code_id_users_table_id_fk",
+        "barcode_item_code_id_itemTable_id_fk": {
+          "name": "barcode_item_code_id_itemTable_id_fk",
           "tableFrom": "barcode",
-          "tableTo": "users_table",
+          "tableTo": "itemTable",
           "columnsFrom": [
             "item_code_id"
           ],
@@ -112,8 +112,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "users_table": {
-      "name": "users_table",
+    "itemTable": {
+      "name": "itemTable",
       "columns": {
         "id": {
           "name": "id",
@@ -159,15 +159,15 @@
         }
       },
       "indexes": {
-        "users_table_id_unique": {
-          "name": "users_table_id_unique",
+        "itemTable_id_unique": {
+          "name": "itemTable_id_unique",
           "columns": [
             "id"
           ],
           "isUnique": true
         },
-        "users_table_item_code_unique": {
-          "name": "users_table_item_code_unique",
+        "itemTable_item_code_unique": {
+          "name": "itemTable_item_code_unique",
           "columns": [
             "item_code"
           ],
@@ -175,9 +175,9 @@
         }
       },
       "foreignKeys": {
-        "users_table_supplier_id_supplier_id_fk": {
-          "name": "users_table_supplier_id_supplier_id_fk",
-          "tableFrom": "users_table",
+        "itemTable_supplier_id_supplier_id_fk": {
+          "name": "itemTable_supplier_id_supplier_id_fk",
+          "tableFrom": "itemTable",
           "tableTo": "supplier",
           "columnsFrom": [
             "supplier_id"
@@ -357,7 +357,9 @@
   "enums": {},
   "_meta": {
     "schemas": {},
-    "tables": {},
+    "tables": {
+      "\"users_table\"": "\"itemTable\""
+    },
     "columns": {}
   },
   "internal": {
