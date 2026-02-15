@@ -1,4 +1,4 @@
-import { Item } from '@/constants/query/item'
+import { fetchItemsByBarcode } from '@/hooks/tanstack-query/item'
 import React from 'react'
 import { Text, View } from 'react-native'
 import { DetailsRow } from './details-row'
@@ -13,12 +13,12 @@ type ScannedItemCardHeader = {
 
 type ScannedItemCardProps = {
     header: ScannedItemCardHeader,
-    item:Item
+    item: Awaited<ReturnType<typeof fetchItemsByBarcode>>
 
 }
 
 
-export const ItemDetails = ({ header,item}: ScannedItemCardProps) => {
+export const ItemDetails = ({ header, item }: ScannedItemCardProps) => {
 
 
     return (
@@ -29,24 +29,24 @@ export const ItemDetails = ({ header,item}: ScannedItemCardProps) => {
                         {header.title}
                     </CardTitle>
                     <CardDescription className='text-black'>
-                        {header.description||'628155'}
+                        {header.description || '628155'}
                     </CardDescription>
                 </View>
 
                 <View className="flex-row items-center gap-2 px-0">
                     <ItemPriceUnit
-                            price={item.price}
-                            uom={item.units[0].uom}
-                        />
+                        price={item?.barcode.price??0}
+                        uom={item?.unit?.unitName||"N/A"}
+                    />
                 </View>
 
             </CardHeader>
 
             <CardContent className='flex-col gap-2 px-0 py-0'>
-                <DetailsRow icon={{ library: 'FontAwesome', name: 'hashtag' }} label='Item Code' value={item.itemCode} />
-                <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item.description} />
+                <DetailsRow icon={{ library: 'FontAwesome', name: 'hashtag' }} label='Item Code' value={item?.item?.item_code??"N/A"} />
+                <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item?.item?.item_description??'N/A'} />
             </CardContent>
-            
+
         </Card>
     )
 }
@@ -62,7 +62,7 @@ type ItemPriceUnitProps = {
 const ItemPriceUnit = ({ price, uom, ...props }: ItemPriceUnitProps) => {
     return (
         <Badge variant="outline" className="border-muted-foreground rounded-full px-4">
-            <Text {...props} className='text-center text-sm font-bold'>SAR {price??0} / {uom??"".toUpperCase()}</Text>
+            <Text {...props} className='text-center text-sm font-bold'>SAR {price ?? 0} / {uom ?? "".toUpperCase()}</Text>
         </Badge>
     )
 }

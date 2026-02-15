@@ -1,8 +1,5 @@
-import { valueIsItemCode } from "@/constants"
-import { getItemByBarcode } from "@/constants/query/barcode"
-import { getItemByItemCode } from "@/constants/query/item"
 import { useAppDispatch } from "@/hooks/redux"
-import { useItems } from "@/hooks/tanstack-query/item"
+import { useItemsByScan } from "@/hooks/tanstack-query/item"
 import { clearItem, setItem } from "@/lib/redux/slice/scanned-item-slice"
 import { ScanItemFormData, scanItemFormSchema } from "@/schema/scan-item-form-schema"
 import { Feather } from "@expo/vector-icons"
@@ -19,9 +16,8 @@ export default function ScanItemForm() {
     const [triggerWidth, setTriggerWidth] = React.useState(0)
     const [barcodeInputValue, setBarcodeInputValue] = React.useState<string>("")
 
-    const { data } = useItems(barcodeInputValue)
+    const { data, isError } = useItemsByScan(barcodeInputValue)
 
-    console.log({ data })
     const quantityInputRef = React.useRef<any>(null)
     const dispatch = useAppDispatch()
 
@@ -30,12 +26,41 @@ export default function ScanItemForm() {
         resolver: zodResolver(scanItemFormSchema),
         defaultValues: {
             barcode: "",
-            uom: "",
+            uom: data?.unit?.unitName??"",
             quantity: 1,
         },
     })
+
+    React.useEffect(() => {
+        if (!barcodeInputValue) return
+        if (isError || !data) {
+            Toast.show({
+                type: 'error',
+                text1: 'Item not found!sfsf',
+                text1Style: {
+                    fontSize: 16
+                },
+            })
+            dispatch(clearItem())
+            return
+        }
+
+        quantityInputRef.current?.focus()
+        form.setValue('uom',data.unit.unitName)
+        dispatch(setItem(data))
+        Toast.show({
+            type: 'success',
+            text1: data.barcode.barcode ?? "",
+            text1Style: {
+                fontSize: 16
+            },
+        })
+    }, [data, isError])
+
+
+
+    //! handle submit function
     const onSubmit = form.handleSubmit(value => {
-        console.log({ value })
         Toast.show({
             type: 'success',
             text1: 'Item added successfully',
@@ -45,6 +70,16 @@ export default function ScanItemForm() {
         })
     })
 
+
+
+    //! handle submit function
+    const handleOnSubmitEditing = (code: string) => {
+        if (!code) {
+            form.setValue('uom',"")
+            return
+        }
+        setBarcodeInputValue(code)
+    }
 
 
 
@@ -65,49 +100,7 @@ export default function ScanItemForm() {
                                         returnKeyType="next"
                                         onChangeText={field.onChange}
                                         value={field.value}
-                                        onSubmitEditing={() => {
-
-                                            setBarcodeInputValue(field.value)
-
-                                            dispatch(setItem(JSON.stringify(data)))
-
-                                            const isItemCode = valueIsItemCode(field.value)
-
-                                            if (isItemCode) {
-                                                const item = getItemByItemCode(field.value)
-                                                if (!item.data) {
-                                                    Toast.show({
-                                                        type: 'error',
-                                                        position: 'top',
-                                                        text1: item.message,
-                                                        text1Style: {
-                                                            fontSize: 16
-                                                        },
-                                                    })
-                                                    dispatch(clearItem())
-                                                    return
-                                                }
-                                                dispatch(setItem(item.data))
-                                                quantityInputRef.current?.focus()
-                                                return
-                                            }
-                                            const item = getItemByBarcode(field.value)
-
-                                            if (!item.data) {
-                                                Toast.show({
-                                                    type: 'error',
-                                                    text1: item.message,
-                                                    text1Style: {
-                                                        fontSize: 16
-                                                    },
-                                                })
-                                                dispatch(clearItem())
-                                                return
-                                            }
-                                            dispatch(setItem(item.data))
-                                            quantityInputRef.current?.focus()
-                                            return
-                                        }}
+                                        onSubmitEditing={() => handleOnSubmitEditing(field.value)}
                                     />
 
                                     {/* Clear Button */}
@@ -135,21 +128,30 @@ export default function ScanItemForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Select onValueChange={(option) => field.onChange(option?.value)} value={{ value: field.value, label: field.value }}>
+                                        <Select
+                                            onValueChange={(option) => field.onChange(option?.value)}
+                                            value={{ value: field.value, label: field.value }}
+                                            defaultValue={{ value: field.value, label: field.value }}
+                                        >
                                             <SelectTrigger onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}>
                                                 <SelectValue placeholder="UOM" />
                                             </SelectTrigger>
                                             <SelectContent style={{ width: triggerWidth }}>
                                                 <SelectGroup>
                                                     <SelectLabel>Units</SelectLabel>
-                                                    <SelectItem value="KG" label="KG" />
+                                                    {
+                                                        (data ? data.units : []).map((unit, i) => (
+                                                            <SelectItem value={unit?.unitName??"N/A"} label={unit?.unitName??"N/A"} key={unit?.id ?? i} />
+                                                        ))
+                                                    }
+                                                    {/* <SelectItem value="KG" label="KG" />
                                                     <SelectItem value="PC" label="PC" />
                                                     <SelectItem value="CT" label="CT" />
                                                     <SelectItem value="CT1" label="CT1" />
                                                     <SelectItem value="OU1" label="OU1" />
                                                     <SelectItem value="OU2" label="OU2" />
                                                     <SelectItem value="BAG" label="BAG" />
-                                                    <SelectItem value="CAN" label="CAN" />
+                                                    <SelectItem value="CAN" label="CAN" /> */}
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>

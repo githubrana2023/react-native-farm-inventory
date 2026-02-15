@@ -1,10 +1,11 @@
+import { fetchItemsByBarcode } from '@/hooks/tanstack-query/item';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
 // type ScannedItem = ReturnType<typeof getItemByBarcode>['data'] | ReturnType<typeof getItemByItemCode>['data']
 
 type ScannedItemState = {
-    scannedItem: any;
+    scannedItem: Awaited<ReturnType<typeof fetchItemsByBarcode>>;
 }
 
 const initialState: ScannedItemState = {

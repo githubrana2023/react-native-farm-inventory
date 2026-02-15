@@ -10,6 +10,7 @@ import { FlatList, View } from "react-native";
 import { db } from "@/drizzle/db";
 import migrations from "@/drizzle/migrations/migrations";
 
+import { ItemDetails } from '@/components/item-details';
 import { Text } from "@/components/ui/text";
 import { items } from "@/constants";
 import { useScannedItem } from "@/hooks/redux";
@@ -43,10 +44,10 @@ export default function Index() {
           {
             scannedItem && (
               <>
-                {/* <ItemDetails header={{ title: "Item Details", description: "Scanned item" }} item={scannedItem} /> */}
-                <Text>{
+                <ItemDetails header={{ title: "Item Details", description: "Scanned item" }} item={scannedItem} />
+                {/* <Text>{
                   JSON.stringify(scannedItem)
-                }</Text>
+                }</Text> */}
                 <Separator className="my-3" />
               </>
             )

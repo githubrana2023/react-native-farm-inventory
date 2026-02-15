@@ -26,6 +26,7 @@ type ScannedItemCardProps = {
 
 const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number], enableActionBtn?: boolean }) => {
     const [isEditState, setIsEditState] = React.useState(false)
+    const [isEditState, setIsEditState] = React.useState<(null)
 
     const form = useForm({
         defaultValues: {
@@ -35,6 +36,7 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
 
     const onSubmit = form.handleSubmit((params) => {
         console.log(params)
+        setIsEditState(false)
         Toast.show({
             type: "success",
             text1: 'Quantity',
@@ -57,13 +59,15 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                 <View className="flex-row items-center gap-2 px-0">
                     {enableActionBtn ? (
                         <>
-                            <Button variant={'outline'} className='bg-[#E8F1FC]' size={'sm'} onPress={() => setIsEditState(pre => !pre)}>
-                                <FontAwesome6 name={isEditState ? "save" : "edit"} color={'#124DA1'} size={20} />
-                            </Button>
+
                             {
-                                !isEditState && (
+                                !isEditState ? (
                                     <Button variant={'destructive'} size={'sm'} onPress={() => alert('hello')}>
                                         <FontAwesome6 name={'trash'} size={20} color={'#fff'} />
+                                    </Button>
+                                ) : (
+                                    <Button variant={'outline'} className='bg-[#E8F1FC]' size={'sm'} onPress={() => setIsEditState(pre => !pre)}>
+                                        <FontAwesome6 name={"save"} color={'#124DA1'} size={20} />
                                     </Button>
                                 )
                             }
@@ -104,11 +108,13 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                                         name="quantity"
                                         render={({ field: { onChange, onBlur, value } }) => (
                                             <Input
+                                            ref={quantityRef}
                                                 className="h-8 w-28" // same height & width as badge
                                                 returnKeyType="go"
                                                 keyboardType='numeric'
                                                 onSubmitEditing={onSubmit}
                                                 onChangeText={onChange}
+                                                onBlur={()=>setIsEditState(false)}
                                                 value={value.toString()}
                                             />
                                         )}
@@ -118,7 +124,9 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                                 <ItemQuantityUnit
                                     quantity={item.quantity}
                                     uom={item.uom}
-                                    onPress={() => setIsEditState(prev => !prev)}
+                                    onPress={() => {
+                                        setIsEditState(prev => !prev)
+                                    }}
                                 />
                             )}
                         </CardFooter>
@@ -139,7 +147,7 @@ type ItemQuantityUnitProps = {
 
 const ItemQuantityUnit = ({ quantity, uom, ...props }: ItemQuantityUnitProps) => {
     return (
-        <Badge variant="outline" className="border-muted-foreground rounded-full px-4">
+        <Badge variant="outline" className="border-muted-foreground rounded-full px-1">
             <Text {...props} className='flex-1 max-w-12 text-center text-sm font-bold'>{quantity} {uom.toUpperCase()}</Text>
         </Badge>
     )
