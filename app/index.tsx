@@ -11,15 +11,19 @@ import migrations from "@/drizzle/migrations/migrations";
 
 import { EmptyState } from '@/components/empty-state';
 import ScanItemForm from '@/components/form/scan-item-form';
+import { Button } from '@/components/ui/button';
 import { Text } from "@/components/ui/text";
 import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query';
 import { Feather } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 
 export default function Index() {
 
   const { success, error } = useMigrations(db, migrations);
-  const { data, isError, isSuccess, isFetching } = useGetStoredScannedItems()
+  const { data} = useGetStoredScannedItems()
+
+  const qs = useQueryClient()
 
 
   const storedScannedItems = data ? data : []
@@ -47,6 +51,9 @@ export default function Index() {
         </View>
       </View>
 
+      <Button onPress={async () =>await qs.invalidateQueries({queryKey: ['get-stored-scanned-items']})}>
+        <Text>Refetch</Text>
+      </Button>
 
       {/* scanned items */}
       {
@@ -62,9 +69,9 @@ export default function Index() {
               />
             )}
           />
-        ):(
+        ) : (
           <EmptyState
-            icon={<Feather name='package' size={28}/>}
+            icon={<Feather name='package' size={28} />}
           />
         )
       }

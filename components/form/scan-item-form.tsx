@@ -168,6 +168,7 @@ export default function ScanItemForm() {
                         />
                     </View>
                 </View>
+                
             </View>
             <Separator className="my-3" />
             <View>
@@ -184,7 +185,10 @@ export default function ScanItemForm() {
                         </>
                     )
                 }
+
             </View>
+
+            
         </Form>
     )
 }

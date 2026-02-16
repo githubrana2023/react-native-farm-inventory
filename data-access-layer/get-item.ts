@@ -63,8 +63,11 @@ export const getStoredScannedItems = async () => {
         .select()
         .from(storedScannedItemTable)
         .leftJoin(unitTable, eq(unitTable.id, storedScannedItemTable.unitId))
-        .leftJoin(barcodeTable, eq(barcodeTable.id, barcodeTable.itemId))
+        .leftJoin(barcodeTable, eq(barcodeTable.id, storedScannedItemTable.barcodeId))
         .leftJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
+
+
+        
 
 
     return storeScannedItems.map(({ barcode, stored_scanned_item, item, unit }) => {
