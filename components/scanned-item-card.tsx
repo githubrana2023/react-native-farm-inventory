@@ -42,7 +42,7 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: Item, enableActionBt
 
     return (
         <Card className='bg-white border-muted my-1 p-3 gap-4'>
-            <CardHeader className='flex-1 flex-row items-center justify-between px-0'>
+            <CardHeader className='flex-row items-center justify-between px-0'>
                 <View>
                     <CardTitle className='text-black'>
                         BARCODE

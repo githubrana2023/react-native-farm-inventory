@@ -1,4 +1,5 @@
 const { hairlineWidth } = require('nativewind/theme');
+const { success } = require('zod');
  
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -24,6 +25,10 @@ module.exports = {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',

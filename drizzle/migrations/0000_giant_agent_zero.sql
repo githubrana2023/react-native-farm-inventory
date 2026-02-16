@@ -30,6 +30,8 @@ CREATE TABLE `stored_scanned_item` (
 	`barcode_id` text NOT NULL,
 	`unit_id` text NOT NULL,
 	`quantity` real NOT NULL,
+	`createdAt` integer NOT NULL,
+	`updatedAt` integer NOT NULL,
 	FOREIGN KEY (`barcode_id`) REFERENCES `barcode`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`unit_id`) REFERENCES `unit`(`id`) ON UPDATE no action ON DELETE no action
 );

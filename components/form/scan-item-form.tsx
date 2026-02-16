@@ -1,3 +1,4 @@
+import { useGetStoredScannedItems } from "@/hooks/tanstack-query/item-query"
 import { useScanBarcode } from "@/hooks/tanstack-query/scanned-item-mutation"
 import { useScanItem } from "@/hooks/use-scan-item"
 import { ScanItemFormData, scanItemFormSchema } from "@/schema/scan-item-form-schema"
@@ -19,6 +20,7 @@ export default function ScanItemForm() {
     const [barcodeInputValue, setBarcodeInputValue] = React.useState<string>("")
     const quantityInputRef = React.useRef<any>(null)
     const qc = useQueryClient()
+    const {refetch}  = useGetStoredScannedItems()
 
 
     // React-hook-form
@@ -62,6 +64,7 @@ export default function ScanItemForm() {
             })
 
         await qc.invalidateQueries({queryKey:['get-stored-scanned-items']})
+        refetch()
     })
 
 

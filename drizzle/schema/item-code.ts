@@ -98,6 +98,8 @@ export const storedScannedItemTable = sqliteTable('stored_scanned_item', {
     barcodeId: text('barcode_id').notNull().references(() => barcodeTable.id),
     unitId:text('unit_id').notNull().references(() => unitTable.id),
     quantity: real('quantity').notNull(),
+    createdAt:createdAt(),
+    updatedAt:updatedAt()
 })
 
 

@@ -1,6 +1,6 @@
 import { db } from "@/drizzle/db"
 import { barcodeTable, itemTable, storedScannedItemTable, unitTable } from "@/drizzle/schema"
-import { eq } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 
 export const getItemByScanBarcode = async (scannedBarcode: string) => {
     const [itemResponse] = await db
@@ -65,6 +65,7 @@ export const getStoredScannedItems = async () => {
         .leftJoin(unitTable, eq(unitTable.id, storedScannedItemTable.unitId))
         .leftJoin(barcodeTable, eq(barcodeTable.id, storedScannedItemTable.barcodeId))
         .leftJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
+        .orderBy(desc(storedScannedItemTable.createdAt))
 
 
         
