@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
+import { dropAllTables } from "@/drizzle/db"
 import { Link } from "expo-router"
 import { View } from "react-native"
 
@@ -48,7 +49,16 @@ export const NavLink = () => {
 
 const Seed = () => {
 
-    return <NavLink />
+    return (
+        <View>
+            <NavLink />
+            <Button size={'sm'} className=" my-6" onPress={dropAllTables}>
+                <Text>
+                    Reset Database
+                </Text>
+            </Button>
+        </View>
+    )
 }
 
 export default Seed

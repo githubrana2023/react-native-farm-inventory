@@ -96,6 +96,7 @@ export const barcodeTableRelations = relations(barcodeTable, ({ one }) => ({
 export const storedScannedItemTable = sqliteTable('stored_scanned_item', {
     id: text('id').primaryKey().notNull().unique().$defaultFn(() => uuid()),
     barcodeId: text('barcode_id').notNull().references(() => barcodeTable.id),
+    unitId:text('unit_id').notNull().references(() => unitTable.id),
     quantity: real('quantity').notNull(),
 })
 

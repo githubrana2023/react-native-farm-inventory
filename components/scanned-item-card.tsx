@@ -1,4 +1,4 @@
-import { items } from '@/constants'
+import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query'
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -17,14 +17,10 @@ type ScannedItemCardHeader = {
     headerComponent?: () => React.ReactNode
 }
 
-
-type ScannedItemCardProps = {
-    header: ScannedItemCardHeader,
-
-}
+type Item = NonNullable<ReturnType<typeof useGetStoredScannedItems>['data']>[number]
 
 
-const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number], enableActionBtn?: boolean }) => {
+const ScannedItemCard = ({ item, enableActionBtn }: { item: Item, enableActionBtn?: boolean }) => {
     const [isEditState, setIsEditState] = React.useState(false)
     const quantityRef = React.useRef<any>(null)
 
@@ -75,7 +71,7 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                     ) : (
                         <ItemQuantityUnit
                             quantity={item.quantity}
-                            uom={item.uom}
+                            uom={item.unitName??"N/A"}
                             onPress={() => setIsEditState(prev => !prev)}
                         />
                     )}
@@ -84,8 +80,8 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
             </CardHeader>
 
             <CardContent className='flex-col gap-2 px-0 py-0'>
-                <DetailsRow icon={{ library: 'FontAwesome', name: 'barcode' }} label='item code' value={item.item_code} />
-                <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item.description} />
+                <DetailsRow icon={{ library: 'FontAwesome', name: 'barcode' }} label='item code' value={item.item_code??"N/A"} />
+                <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item.description??"N/A"} />
             </CardContent>
             {
                 enableActionBtn && (
@@ -123,7 +119,7 @@ const ScannedItemCard = ({ item, enableActionBtn }: { item: typeof items[number]
                             ) : (
                                 <ItemQuantityUnit
                                     quantity={item.quantity}
-                                    uom={item.uom}
+                                    uom={item.unitName??"N/A"}
                                     onPress={() => {
                                         setIsEditState(prev => !prev)
                                         quantityRef.current?.focus()

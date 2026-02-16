@@ -18,12 +18,12 @@ export function useScanItem({ barcode,form,quantityRef}: {
     React.useEffect(() => {
         if (!barcode) return
 
-        if (isError || !data) {
+        if (isError || !data||!data.data) {
             Toast.show({ type: "error", text1: "Item not found!" })
             return
         }
 
-        form.setValue("uom", data.data?.unit_name ?? "")
+        form.setValue("unitId", data.data?.unitName)
         quantityRef.current?.focus()
 
         Toast.show({ type: "success", text1: data.msg })

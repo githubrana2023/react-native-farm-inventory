@@ -9,14 +9,20 @@ import { FlatList, View } from "react-native";
 import { db } from "@/drizzle/db";
 import migrations from "@/drizzle/migrations/migrations";
 
+import { EmptyState } from '@/components/empty-state';
 import ScanItemForm from '@/components/form/scan-item-form';
 import { Text } from "@/components/ui/text";
-import { items } from "@/constants";
+import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query';
+import { Feather } from '@expo/vector-icons';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 
 export default function Index() {
 
   const { success, error } = useMigrations(db, migrations);
+  const { data, isError, isSuccess, isFetching } = useGetStoredScannedItems()
+
+
+  const storedScannedItems = data ? data : []
 
   if (error) {
     return (
@@ -43,17 +49,25 @@ export default function Index() {
 
 
       {/* scanned items */}
-      <FlatList
-        className="pb-0 flex-1"
-        showsVerticalScrollIndicator={false}
-        data={items}
-        renderItem={({ item }) => (
-          <ScannedItemCard
-            key={item.barcode}
-            item={item}
+      {
+        storedScannedItems.length > 0 ? (
+          <FlatList
+            className="pb-0 flex-1"
+            showsVerticalScrollIndicator={false}
+            data={storedScannedItems}
+            renderItem={({ item }) => (
+              <ScannedItemCard
+                key={item.barcode}
+                item={item}
+              />
+            )}
           />
-        )}
-      />
+        ):(
+          <EmptyState
+            icon={<Feather name='package' size={28}/>}
+          />
+        )
+      }
     </Container>
   );
 }
