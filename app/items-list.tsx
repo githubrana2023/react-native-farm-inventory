@@ -9,6 +9,7 @@ import { useAlertModal, useAppDispatch } from '@/hooks/redux'
 import { useGetStoredScannedItems, useGetStoredScannedItemsSearch } from '@/hooks/tanstack-query/item-query'
 import { useDeleteScannedItem, useUpdateScannedItemQuantity } from '@/hooks/tanstack-query/scanned-item-mutation'
 import { onClose, onOpen } from '@/lib/redux/slice/alert-modal-slice'
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
 import { FlatList, View } from 'react-native'
 import Toast from 'react-native-toast-message'
@@ -20,10 +21,11 @@ type ActionState =
 const ItemsList = () => {
   const [searchInputValue, setSearchInputValue] = useState("")
   const { data:allData, refetch,} = useGetStoredScannedItems()
-  const { data:searchedData} = useGetStoredScannedItemsSearch(searchInputValue)
+  const { data:searchedData,refetch:refetchSearch} = useGetStoredScannedItemsSearch(searchInputValue)
   const [actionState, setActionState] = useState<ActionState>(null)
   const { mutate: deleteMutate } = useDeleteScannedItem()
   const { mutate: updateMutate } = useUpdateScannedItemQuantity()
+  const qs =useQueryClient()
   const { isOpen, type } = useAlertModal()
   const isUpdateAlertModalOpen = type === 'update' && isOpen
   const isDeleteAlertModalOpen = type === 'delete' && isOpen
@@ -43,6 +45,8 @@ const ItemsList = () => {
         { quantity: actionState.item.quantity.toString(), storedScannedItemId: actionState.item.storedId },
         {
           async onSuccess(data) {
+            await  qs.invalidateQueries({queryKey:['get-stored-scanned-items-search',searchInputValue]})
+            refetchSearch()
             if (!data.data) {
               Toast.show({
                 type: 'error',
@@ -65,6 +69,9 @@ const ItemsList = () => {
                 fontSize: 14
               }
             })
+          },
+          async onSettled(data, error, variables, onMutateResult, context) {
+           await  qs.invalidateQueries({queryKey:['get-stored-scanned-items-search',searchInputValue]})
           },
         }
       )

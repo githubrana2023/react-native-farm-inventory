@@ -36,7 +36,7 @@ export const useGetStoredScannedItems = () => {
 
 export const useGetStoredScannedItemsSearch = (search: string) => {
     const qs = useQueryClient()
-    const queryKey = ['get-stored-scanned-items', search]
+    const queryKey = ['get-stored-scanned-items-search', search]
     const data = useQuery({
         queryKey,
         queryFn: () => getStoredScannedItems(search),

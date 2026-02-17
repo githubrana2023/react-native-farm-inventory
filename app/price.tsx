@@ -3,6 +3,7 @@ import { PriceCheckCard } from '@/components/price-check-card'
 import { Input } from '@/components/ui/input'
 import { useGetItemPriceByBarcode } from '@/hooks/tanstack-query/item-query'
 import { Feather } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
@@ -10,6 +11,7 @@ import { ScrollView, TouchableOpacity, View } from 'react-native'
 const Price = () => {
   const [barcode, setBarcode] = useState("")
   const { data ,refetch} = useGetItemPriceByBarcode(barcode)
+  const qc = useQueryClient()
   const form = useForm({
     defaultValues: { barcode: "" }
   })
@@ -39,9 +41,9 @@ const Price = () => {
               {/* Clear Button */}
               {value.length > 0 ? (
                 <View className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                  <TouchableOpacity onPress={() => {
-                    form.reset()
-                    refetch()
+                  <TouchableOpacity onPress={async() => {
+                    form.reset({barcode:""})
+                    setBarcode("") 
                   }}>
                     <Feather name="x-circle" size={24} />
                   </TouchableOpacity>
