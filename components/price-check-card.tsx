@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { cn, copyToClipboard } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons"
-import { Pressable, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import { DetailsRow } from "./details-row"
 
 interface PriceCheckCardProps {
@@ -40,11 +40,11 @@ export function PriceCheckCard({
     }
 
     return (
-        <Card className="gap-0">
+        <Card className="gap-0 p-2">
             {/* PRICE HEADER */}
-            <View className="relative items-center border-b border-border bg-secondary/50 px-6 py-5">
+            <View className="relative items-center border-b border-border bg-secondary/50 px-4 pt-6 pb-2">
                 {isOnPromo && (
-                    <Badge className="absolute right-3 top-3 flex-row items-center rounded-full bg-green-600 px-2 py-0.5">
+                    <Badge className="absolute right-1.5 top-1.5 flex-row items-center rounded-full bg-green-600 px-2 py-0.5">
                         <MaterialCommunityIcons
                             name="percent-circle-outline"
                             size={12}
@@ -78,7 +78,7 @@ export function PriceCheckCard({
 
             {/* DETAILS */}
             <CardContent className="p-0">
-                <View className="gap-3 p-5">
+                <View className="gap-3 p-2">
                     {/* BARCODE */}
                     <DetailsRow
                         icon={{ library: 'FontAwesome', name: "barcode" }}
@@ -88,7 +88,7 @@ export function PriceCheckCard({
 
                     {/* ITEM CODE */}
                     <DetailsRow
-                        icon={{ library: 'FontAwesome', name: "code" }}
+                        icon={{ library: 'FontAwesome', name: "hashtag" }}
                         label="item code"
                         value={itemCode}
                     />
@@ -103,15 +103,27 @@ export function PriceCheckCard({
                 </View>
 
                 {/* SUPPLIER FOOTER */}
-                <View className="flex-row items-center justify-between border-t border-border bg-secondary/30 px-5 py-3">
+                <View className="flex-row items-center justify-between border-t border-border bg-secondary/30 p-2">
                     {/* LEFT SIDE */}
                     <View className="flex-1 flex-row items-start">
                         <FontAwesome6 name="truck" size={16} color="#6b7280" />
 
                         <View className="ml-2 flex-1">
-                            <Text className="text-xs font-medium uppercase text-muted-foreground">
-                                Supplier
-                            </Text>
+                            <View className="flex-row items-center justify-between">
+
+                                <Text className="text-xs font-medium uppercase text-muted-foreground">
+                                    Supplier
+                                </Text>
+                                <Badge
+                                    variant="outline"
+                                    className="ml-2 flex-row items-center rounded-md px-2.5 py-1"
+                                >
+                                    <FontAwesome6 name="tag" size={12} color="#6b7280" />
+                                    <Text className="ml-1 font-mono text-xs font-semibold">
+                                        {supplierCode}
+                                    </Text>
+                                </Badge>
+                            </View>
 
                             <Text
                                 className="text-sm font-medium text-foreground"
@@ -124,22 +136,7 @@ export function PriceCheckCard({
 
                     {/* RIGHT BADGE */}
 
-                    <Badge
-                        variant="outline"
-                        className="ml-2 flex-row items-center rounded-md px-2.5 py-1"
-                    >
-                        <Pressable
-                            onPress={async () => {
-                                await copyToClipboard(supplierCode)
-                            }}
-                            className="flex-row items-center"
-                        >
-                            <FontAwesome6 name="tag" size={12} color="#6b7280" />
-                            <Text className="ml-1 font-mono text-xs font-semibold">
-                                {supplierCode}
-                            </Text>
-                        </Pressable>
-                    </Badge>
+
 
 
                 </View>

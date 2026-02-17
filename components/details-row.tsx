@@ -29,9 +29,9 @@ export const DetailsRow = ({
         <View className="flex-row items-start gap-2 bg-white">
             <View className='flex-row items-center justify-center w-8 h-8 bg-[##E8F1FC] rounded-md'>
                 {isFontAwesome ? (
-                    <FontAwesome6 name={name} color={"#124DA1"} size={20} />
+                    <FontAwesome6 name={name} color={"#124DA1"} size={16} />
                 ) : (
-                    <MaterialIcons name={name} color={"#124DA1"} size={20} />
+                    <MaterialIcons name={name} color={"#124DA1"} size={16} />
                 )}
             </View>
 

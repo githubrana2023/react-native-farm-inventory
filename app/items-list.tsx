@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Text } from '@/components/ui/text'
 import { StoredItem } from '@/data-access-layer/get-item'
 import { useAlertModal, useAppDispatch } from '@/hooks/redux'
-import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query'
+import { useGetStoredScannedItems, useGetStoredScannedItemsSearch } from '@/hooks/tanstack-query/item-query'
 import { useDeleteScannedItem, useUpdateScannedItemQuantity } from '@/hooks/tanstack-query/scanned-item-mutation'
 import { onClose, onOpen } from '@/lib/redux/slice/alert-modal-slice'
 import React, { useState } from 'react'
@@ -14,13 +14,13 @@ import { FlatList, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
 type ActionState =
-  { type: 'update', item: StoredItem }
-  | { type: 'delete', item: StoredItem }
+  { type: 'update' | 'delete', item: StoredItem }
   | null
 
 const ItemsList = () => {
   const [searchInputValue, setSearchInputValue] = useState("")
-  const { data, refetch, qs, queryKey } = useGetStoredScannedItems(searchInputValue)
+  const { data:allData, refetch,} = useGetStoredScannedItems()
+  const { data:searchedData} = useGetStoredScannedItemsSearch(searchInputValue)
   const [actionState, setActionState] = useState<ActionState>(null)
   const { mutate: deleteMutate } = useDeleteScannedItem()
   const { mutate: updateMutate } = useUpdateScannedItemQuantity()
@@ -29,6 +29,12 @@ const ItemsList = () => {
   const isDeleteAlertModalOpen = type === 'delete' && isOpen
   const dispatch = useAppDispatch()
 
+  const data = searchInputValue.length>0?searchedData:allData
+  const actionItem = actionState && actionState.item
+
+  const currentItem = (data ?? []).find(item => item.storedId === actionItem?.storedId)
+
+
   const onUpdate = () => {
     if (actionState && actionState.type === 'update') {
       dispatch(onClose())
@@ -36,7 +42,7 @@ const ItemsList = () => {
       updateMutate(
         { quantity: actionState.item.quantity.toString(), storedScannedItemId: actionState.item.storedId },
         {
-          onSuccess(data) {
+          async onSuccess(data) {
             if (!data.data) {
               Toast.show({
                 type: 'error',
@@ -73,7 +79,7 @@ const ItemsList = () => {
         actionState.item.storedId,
         {
           async onSuccess(data) {
-            await qs.invalidateQueries({ queryKey })
+            refetch()
             dispatch(onClose())
             Toast.show({
               type: 'success',
@@ -92,6 +98,9 @@ const ItemsList = () => {
 
 
 
+  const updateAlertTitle = `Current quantity ${currentItem?.quantity} will update to ${actionItem?.quantity}`
+  const updateAlertDescription = actionItem?.description??""
+
   return (
     <Container>
 
@@ -100,8 +109,8 @@ const ItemsList = () => {
         isOpen={isUpdateAlertModalOpen}
         onCancel={() => dispatch(onClose())}
         onConfirm={onUpdate}
-        title={(actionState&&actionState.type==="update")?actionState.item.quantity.toString():""}
-        description='Scanned item quantity will update!'
+        title={updateAlertTitle}
+        description={updateAlertDescription}
 
       />
       <AlertModal
@@ -109,7 +118,7 @@ const ItemsList = () => {
         onCancel={() => dispatch(onClose())}
         onConfirm={onDelete}
         title='Sure? Scanned item will be delete!'
-        description={(actionState&&actionState.type==="delete")&&actionState.item.description||""}
+        description={(actionState && actionState.type === "delete") && actionState.item.description || ""}
 
       />
 

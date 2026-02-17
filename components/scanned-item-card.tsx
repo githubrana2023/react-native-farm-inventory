@@ -1,4 +1,5 @@
 import { StoredItem } from '@/data-access-layer/get-item'
+import { copyToClipboard } from '@/lib/utils'
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -16,23 +17,23 @@ type WithActionBtn = {
     enableActionBtn?: true;
     defaultCollapse: boolean;
     isCollapseAble: boolean;
-    onUpdate: (item:StoredItem) => void;
-    onDelete: (item:StoredItem) => void;
+    onUpdate: (item: StoredItem) => void;
+    onDelete: (item: StoredItem) => void;
 }
 type WithoutActionBtn = {
     item: StoredItem,
     enableActionBtn?: false;
     defaultCollapse?: boolean;
     isCollapseAble?: boolean;
-    onUpdate?: (item:StoredItem) => void;
-    onDelete?: (item:StoredItem) => void;
+    onUpdate?: (item: StoredItem) => void;
+    onDelete?: (item: StoredItem) => void;
 }
 type ScannedItemCardProps = WithActionBtn | WithoutActionBtn
 
 
 const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollapse, onDelete, onUpdate }: ScannedItemCardProps) => {
     const [isEditState, setIsEditState] = React.useState(false)
-    const [isCollapsed, setIsCollapsed] = React.useState(() => defaultCollapse)
+    const [isCollapsed, setIsCollapsed] = React.useState(() => defaultCollapse??false)
 
     const quantityRef = React.useRef<any>(null)
 
@@ -43,23 +44,25 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
     })
 
     const onSubmit = form.handleSubmit((params) => {
-        if (!!onUpdate&&item.quantity !==params.quantity) {
+        if (!!onUpdate && item.quantity !== params.quantity) {
             onUpdate({
                 ...item,
-                quantity:params.quantity
+                quantity: params.quantity
             })
         }
         setIsEditState(false)
     })
 
     React.useEffect(() => {
-        form.reset({
-            quantity: item.quantity
-        })
-    }, [item.quantity, form])
+        if (!isEditState) {
+            form.reset({
+                quantity: item.quantity
+            })
+        }
+    }, [isEditState, item.quantity])
 
     return (
-        <Card className='bg-white border-muted my-1 p-3 gap-4'>
+        <Card className='bg-white border-muted my-0.5 p-2 gap-4'>
             <TouchableOpacity onPress={() => setIsCollapsed(prev => !prev)}>
                 <CardHeader className='flex-row items-center justify-between px-0'>
                     <View>
@@ -105,7 +108,21 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
                 (isCollapseAble && !isCollapsed) && (
                     <>
                         <CardContent className='flex-col gap-2 px-0 py-0'>
-                            <DetailsRow icon={{ library: 'FontAwesome', name: 'barcode' }} label='item code' value={item.item_code ?? "N/A"} />
+                            <View className="flex-row items-center">
+                                <View className="flex-1">
+                                    <DetailsRow icon={{ library: 'FontAwesome', name: 'hashtag' }} label='item code' value={item.item_code ?? "N/A"} />
+                                </View>
+                                <Button className='flex-row items-center gap-1' size={'sm'} onPress={async () => {
+                                    await copyToClipboard(item.barcode??"")
+                                }}>
+                                    <Text className='text-white'>
+                                        <FontAwesome6 name='copy' color="#fff" />
+                                    </Text>
+                                    <Text className='text-white'>
+                                        Barcode
+                                    </Text>
+                                </Button>                                
+                            </View>
                             <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item.description ?? "N/A"} />
                         </CardContent>
                         {

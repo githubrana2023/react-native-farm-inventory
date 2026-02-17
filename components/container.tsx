@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 const Container = ({ children }: { children: React.ReactNode }) => {
     return (
-        <SafeAreaView className='flex-1'>
+        <SafeAreaView className='flex-1' edges={['top']}>
             <View className='flex-1 flex-col px-4'>
                 {children}
             </View>

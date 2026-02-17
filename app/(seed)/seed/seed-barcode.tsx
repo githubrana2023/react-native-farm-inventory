@@ -129,7 +129,6 @@ export default function SeedItemFrom() {
                                     returnKeyType="next"
                                     onChangeText={field.onChange}
                                     value={field.value}
-                                    editable={!pending}
                                 />
                             </FormControl>
                         </FormItem>
@@ -147,14 +146,13 @@ export default function SeedItemFrom() {
                                     returnKeyType="go"
                                     onChangeText={field.onChange}
                                     value={field.value}
-                                    editable={!pending}
                                     onSubmitEditing={()=>onSubmit()}
                                 />
                             </FormControl>
                         </FormItem>
                     )}
                 />
-                <Button onPress={onSubmit} disabled={pending}>
+                <Button onPress={onSubmit}>
                     <Text>Seed Barcode</Text>
                 </Button>
             </Form>
