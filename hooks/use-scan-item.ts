@@ -3,7 +3,7 @@ import { ScanItemFormData } from "@/schema/scan-item-form-schema"
 import { useQueryClient } from "@tanstack/react-query"
 import React from "react"
 import { UseFormReturn } from "react-hook-form"
-import Toast from "react-native-toast-message"
+import { Toast } from "toastify-react-native"
 
 export function useScanItem({ barcode,form,quantityRef}: {
     barcode: string,

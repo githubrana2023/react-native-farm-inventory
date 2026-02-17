@@ -12,7 +12,7 @@ import { onClose, onOpen } from '@/lib/redux/slice/alert-modal-slice'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
 import { FlatList, View } from 'react-native'
-import Toast from 'react-native-toast-message'
+import { Toast } from 'toastify-react-native'
 
 type ActionState =
   { type: 'update' | 'delete', item: StoredItem }
@@ -20,18 +20,18 @@ type ActionState =
 
 const ItemsList = () => {
   const [searchInputValue, setSearchInputValue] = useState("")
-  const { data:allData, refetch,} = useGetStoredScannedItems()
-  const { data:searchedData,refetch:refetchSearch} = useGetStoredScannedItemsSearch(searchInputValue)
+  const { data: allData, refetch, } = useGetStoredScannedItems()
+  const { data: searchedData, refetch: refetchSearch } = useGetStoredScannedItemsSearch(searchInputValue)
   const [actionState, setActionState] = useState<ActionState>(null)
   const { mutate: deleteMutate } = useDeleteScannedItem()
   const { mutate: updateMutate } = useUpdateScannedItemQuantity()
-  const qs =useQueryClient()
+  const qs = useQueryClient()
   const { isOpen, type } = useAlertModal()
   const isUpdateAlertModalOpen = type === 'update' && isOpen
   const isDeleteAlertModalOpen = type === 'delete' && isOpen
   const dispatch = useAppDispatch()
 
-  const data = searchInputValue.length>0?searchedData:allData
+  const data = searchInputValue.length > 0 ? searchedData : allData
   const actionItem = actionState && actionState.item
 
   const currentItem = (data ?? []).find(item => item.storedId === actionItem?.storedId)
@@ -45,33 +45,16 @@ const ItemsList = () => {
         { quantity: actionState.item.quantity.toString(), storedScannedItemId: actionState.item.storedId },
         {
           async onSuccess(data) {
-            await  qs.invalidateQueries({queryKey:['get-stored-scanned-items-search',searchInputValue]})
-            refetchSearch()
+            await qs.invalidateQueries({ queryKey: ['get-stored-scanned-items-search', searchInputValue] })
+            if (searchInputValue.length > 0) {
+              refetchSearch()
+            }
             if (!data.data) {
-              Toast.show({
-                type: 'error',
-                text1: data.msg,
-                text1Style: {
-                  fontSize: 16
-                },
-              })
+              Toast.error(data.msg,'center')
               return
             }
             refetch()
-            Toast.show({
-              type: 'success',
-              text1: data.msg,
-              text1Style: {
-                fontSize: 16
-              },
-              text2: data.data.quantity.toString(),
-              text2Style: {
-                fontSize: 14
-              }
-            })
-          },
-          async onSettled(data, error, variables, onMutateResult, context) {
-           await  qs.invalidateQueries({queryKey:['get-stored-scanned-items-search',searchInputValue]})
+            Toast.success(data.msg)
           },
         }
       )
@@ -86,14 +69,14 @@ const ItemsList = () => {
         actionState.item.storedId,
         {
           async onSuccess(data) {
+            if (searchInputValue.length > 0) {
+              refetchSearch()
+            }
             refetch()
             dispatch(onClose())
             Toast.show({
               type: 'success',
               text1: data.msg,
-              text1Style: {
-                fontSize: 16
-              },
             })
           },
         }
@@ -106,7 +89,7 @@ const ItemsList = () => {
 
 
   const updateAlertTitle = `Current quantity ${currentItem?.quantity} will update to ${actionItem?.quantity}`
-  const updateAlertDescription = actionItem?.description??""
+  const updateAlertDescription = actionItem?.description ?? ""
 
   return (
     <Container>
@@ -176,17 +159,17 @@ const ItemsList = () => {
 
 
         {/* Buttons */}
-        <View className='flex-row items-center gap-1 justify-between py-2'>
+        <View className='flex-row items-center justify-between py-2 gap-1'>
           <Button variant='outline' size={'sm'} className='flex-1'>
             <Text>Inventory</Text>
           </Button>
-          <Button variant='outline' size={'sm'} className='flex-1'>
+          <Button variant='outline' size={'sm'} >
             <Text>Tags</Text>
           </Button>
           <Button variant='outline' size={'sm'} className='flex-1'>
             <Text>Order</Text>
           </Button>
-          <Button variant='outline' size={'sm'} className='flex-1'>
+          <Button variant='outline' size={'sm'}>
             <Text>Print</Text>
           </Button>
         </View>

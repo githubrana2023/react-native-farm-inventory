@@ -1,80 +1,14 @@
 import Container from '@/components/container'
-import { Button } from '@/components/ui/button'
 import { Text } from '@/components/ui/text'
-import { db } from '@/drizzle/db'
-import { barcodeTable, itemTable, supplierTable } from '@/drizzle/schema'
-import main from '@/drizzle/seed'
-import { copyToClipboard } from '@/lib/utils'
-import { FontAwesome6 } from '@expo/vector-icons'
 import React from 'react'
-import { FlatList, View } from 'react-native'
-
-type Supplier = typeof supplierTable.$inferSelect
-type Item = typeof itemTable.$inferSelect
-type Barcode = typeof barcodeTable.$inferSelect
+import { View } from 'react-native'
 
 const Settings = () => {
-
-  const [suppliers, setSuppliers] = React.useState<Supplier[]>([])
-  const [items, setItems] = React.useState<Item[]>([])
-  const [barcodes, setBarcodes] = React.useState<Barcode[]>([])
-
-  React.useEffect(() => {
-    const getSuppliers = async () => {
-      const suppliers = await db.select().from(supplierTable)
-      setSuppliers(suppliers)
-    }
-    const getItems = async () => {
-      const items = await db.select().from(itemTable)
-      setItems(items)
-    }
-    const barcode = async () => {
-      const items = await db.select().from(barcodeTable)
-      setBarcodes(items)
-    }
-
-    getSuppliers()
-    getItems()
-    barcode()
-  }, [suppliers])
-
-  const onDelete = async (id: string) => {
-    // await db.delete(itemTable).where(eq(itemTable.id, id))
-  }
 
   return (
     <Container>
       <View className='flex-1 items-center justify-center'>
-        <Button onPress={main}>
-          <Text>Seed</Text>
-        </Button>
-
-        <View>
-          <FlatList
-            data={barcodes}
-            renderItem={({ item }) => (
-              <View className='flex-1 flex-row px-3 py-2 items-center justify-between'>
-                <Text className='px-3 py-1'>{item.barcode}</Text>
-                <Button
-                  onPress={() => onDelete(item.id)}
-                // disabled={items.length === 5}
-                >
-                  <Text>
-                    <FontAwesome6 name='trash' />
-                  </Text>
-                </Button>
-                <Button
-                  onPress={async()=>await copyToClipboard(item.barcode)}
-                // disabled={items.length === 5}
-                >
-                  <Text>
-                    <FontAwesome6 name='copy' />
-                  </Text>
-                </Button>
-              </View>
-            )}
-          />
-        </View>
+        <Text>Coming Soon...</Text>
       </View>
     </Container>
   )

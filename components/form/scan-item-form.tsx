@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import React, { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { TouchableOpacity, View } from "react-native"
-import Toast from "react-native-toast-message"
+import { Toast } from "toastify-react-native"
 import InputField from "../input-field"
 import { ItemDetails } from "../item-details"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "../ui/form"
@@ -47,20 +47,13 @@ export default function ScanItemForm() {
                         Toast.show({
                             type: 'error',
                             text1: msg,
-                            text1Style: {
-                                fontSize: 16
-                            },
                         })
                         return
                     }
                     Toast.show({
                         type: 'success',
                         text1: msg,
-                        text1Style: {
-                            fontSize: 16
-                        },
                     })
-                    await qc.invalidateQueries({ queryKey: ['get-stored-scanned-items'] })
                     refetch()
 
                 },

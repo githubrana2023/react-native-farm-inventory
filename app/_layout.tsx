@@ -3,7 +3,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Tabs } from "expo-router";
 import 'react-native-reanimated';
-import Toast from 'react-native-toast-message';
+import ToastManager from 'toastify-react-native';
 
 import StoreProvider from "@/components/provider/redux-store-provider";
 import { queryClient } from "@/lib/tanstack-query/client";
@@ -32,7 +32,7 @@ export default function RootLayout() {
             ))}
           </Tabs>
           <PortalHost />
-          <Toast />
+          <ToastManager />
         </SafeAreaProvider>
       </StoreProvider>
     </QueryClientProvider>

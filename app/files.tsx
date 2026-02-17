@@ -1,11 +1,13 @@
 import Container from '@/components/container'
 import React from 'react'
-import { Text } from 'react-native'
+import { Text, View } from 'react-native'
 
 const Files = () => {
   return (
     <Container>
-      <Text>Files</Text>
+      <View className='flex-1 items-center justify-center'>
+        <Text>Coming Soon...</Text>
+      </View>
     </Container>
   )
 }

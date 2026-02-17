@@ -53,7 +53,7 @@ export const deleteScannedItem = async (id: string) => {
     await db.delete(storedScannedItemTable).where(eq(storedScannedItemTable.id, id)).returning()
 
     return {
-        msg: "Item Added",
+        msg: "Item deleted!",
         data: null
     }
 }
