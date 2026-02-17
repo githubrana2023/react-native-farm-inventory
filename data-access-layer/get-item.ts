@@ -97,3 +97,6 @@ export const getStoredScannedItems = async (query?: string) => {
 
 }
 
+export type StoredItem = NonNullable<Awaited<ReturnType<typeof getStoredScannedItems>>>[number]
+
+

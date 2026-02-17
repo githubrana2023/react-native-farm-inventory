@@ -13,7 +13,7 @@ export const useGetItemByBarcode = (barcode: string) => {
 
 export const useGetStoredScannedItems = (search?: string) => {
     const qs = useQueryClient()
-    const queryKey = ['get-stored-scanned-items', search]
+    const queryKey = ['get-stored-scanned-items']
     const data = useQuery({
         queryKey,
         queryFn: () => getStoredScannedItems(search),

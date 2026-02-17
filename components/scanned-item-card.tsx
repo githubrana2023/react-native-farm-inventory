@@ -1,4 +1,4 @@
-import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query'
+import { StoredItem } from '@/data-access-layer/get-item'
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -10,25 +10,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from './ui/input'
 import { Separator } from './ui/separator'
 
-type Item = NonNullable<ReturnType<typeof useGetStoredScannedItems>['data']>[number]
-
-
 
 type WithActionBtn = {
-    item: Item,
-    enableActionBtn: true;
+    item: StoredItem,
+    enableActionBtn?: true;
     defaultCollapse: boolean;
     isCollapseAble: boolean;
-    onUpdate: (params: { id: string; quantity: string }) => void;
-    onDelete: (id: string) => void;
+    onUpdate: (item:StoredItem) => void;
+    onDelete: (item:StoredItem) => void;
 }
 type WithoutActionBtn = {
-    item: Item,
-    enableActionBtn: false;
-    defaultCollapse: boolean;
-    isCollapseAble: boolean;
-    onUpdate?: (params: { id: string; quantity: string }) => void;
-    onDelete?: (id: string) => void;
+    item: StoredItem,
+    enableActionBtn?: false;
+    defaultCollapse?: boolean;
+    isCollapseAble?: boolean;
+    onUpdate?: (item:StoredItem) => void;
+    onDelete?: (item:StoredItem) => void;
 }
 type ScannedItemCardProps = WithActionBtn | WithoutActionBtn
 
@@ -46,13 +43,13 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
     })
 
     const onSubmit = form.handleSubmit((params) => {
-        if (!!onUpdate) {
+        if (!!onUpdate&&item.quantity !==params.quantity) {
             onUpdate({
-                quantity: params.quantity.toString(),
-                id: item.storedId
+                ...item,
+                quantity:params.quantity
             })
-            setIsEditState(false)
         }
+        setIsEditState(false)
     })
 
     React.useEffect(() => {
@@ -81,7 +78,7 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
                                 {
                                     !isEditState ? (
                                         <Button variant={'destructive'} size={'sm'} onPress={() => {
-                                            onDelete(item.storedId)
+                                            onDelete(item)
                                         }}>
                                             <FontAwesome6 name={'trash'} size={14} color={'#fff'} />
                                         </Button>

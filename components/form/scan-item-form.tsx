@@ -21,7 +21,7 @@ export default function ScanItemForm() {
     const quantityInputRef = React.useRef<any>(null)
     const barcodeInputRef = React.useRef<any>(null)
     const qc = useQueryClient()
-    const { refetch } = useGetStoredScannedItems()
+    const { refetch, } = useGetStoredScannedItems()
 
 
     // React-hook-form
@@ -42,7 +42,7 @@ export default function ScanItemForm() {
         mutate(
             value,
             {
-                onSuccess({ data, msg }) {
+                async onSuccess({ data, msg }) {
                     if (!data) {
                         Toast.show({
                             type: 'error',
@@ -60,13 +60,12 @@ export default function ScanItemForm() {
                             fontSize: 16
                         },
                     })
+                    await qc.invalidateQueries({ queryKey: ['get-stored-scanned-items'] })
+                    refetch()
 
                 },
             })
-
-        await qc.invalidateQueries({ queryKey: ['get-stored-scanned-items'] })
         barcodeInputRef.current?.focus()
-        refetch()
         //TODO:Reset form & set barcode input value to ""
     })
 

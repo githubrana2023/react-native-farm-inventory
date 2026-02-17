@@ -66,7 +66,6 @@ export default function Index() {
               <ScannedItemCard
                 key={item.barcode}
                 item={item}
-                isCollapseAble
               />
             )}
           />

@@ -4,6 +4,7 @@ import ScannedItemCard from '@/components/scanned-item-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Text } from '@/components/ui/text'
+import { StoredItem } from '@/data-access-layer/get-item'
 import { useAlertModal, useAppDispatch } from '@/hooks/redux'
 import { useGetStoredScannedItems } from '@/hooks/tanstack-query/item-query'
 import { useDeleteScannedItem, useUpdateScannedItemQuantity } from '@/hooks/tanstack-query/scanned-item-mutation'
@@ -13,8 +14,8 @@ import { FlatList, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
 type ActionState =
-  { type: 'update', id: string, quantity: string }
-  | { type: 'delete', id: string }
+  { type: 'update', item: StoredItem }
+  | { type: 'delete', item: StoredItem }
   | null
 
 const ItemsList = () => {
@@ -33,7 +34,7 @@ const ItemsList = () => {
       dispatch(onClose())
 
       updateMutate(
-        { quantity: actionState.quantity, storedScannedItemId: actionState.id },
+        { quantity: actionState.item.quantity.toString(), storedScannedItemId: actionState.item.storedId },
         {
           onSuccess(data) {
             if (!data.data) {
@@ -63,15 +64,17 @@ const ItemsList = () => {
       )
     }
   }
+
+
+
   const onDelete = () => {
     if (actionState && actionState.type === 'delete') {
       deleteMutate(
-        actionState.id,
+        actionState.item.storedId,
         {
           async onSuccess(data) {
-            dispatch(onClose())
-            refetch()
             await qs.invalidateQueries({ queryKey })
+            dispatch(onClose())
             Toast.show({
               type: 'success',
               text1: data.msg,
@@ -97,7 +100,7 @@ const ItemsList = () => {
         isOpen={isUpdateAlertModalOpen}
         onCancel={() => dispatch(onClose())}
         onConfirm={onUpdate}
-        title='Are you sure?'
+        title={(actionState&&actionState.type==="update")?actionState.item.quantity.toString():""}
         description='Scanned item quantity will update!'
 
       />
@@ -105,8 +108,8 @@ const ItemsList = () => {
         isOpen={isDeleteAlertModalOpen}
         onCancel={() => dispatch(onClose())}
         onConfirm={onDelete}
-        title='Are you sure?'
-        description='Scanned item will be delete!'
+        title='Sure? Scanned item will be delete!'
+        description={(actionState&&actionState.type==="delete")&&actionState.item.description||""}
 
       />
 
@@ -143,13 +146,13 @@ const ItemsList = () => {
               enableActionBtn
               isCollapseAble
               defaultCollapse={index !== 0}
-              onDelete={(id) => {
+              onDelete={(item) => {
                 dispatch(onOpen('delete'))
-                setActionState({ type: 'delete', id })
+                setActionState({ type: 'delete', item })
               }}
-              onUpdate={({ id, quantity }) => {
+              onUpdate={(item) => {
                 dispatch(onOpen('update'))
-                setActionState({ type: 'update', id, quantity })
+                setActionState({ type: 'update', item })
               }}
             />
           )}
