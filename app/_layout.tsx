@@ -44,7 +44,7 @@ type RootLayoutScreens = Parameters<typeof Tabs.Screen>[0]
 
 const rootLayoutScreens: RootLayoutScreens[] = [
   {
-    name: "index",
+    name: "(home)",
     options: {
       tabBarLabel: "Home",
       tabBarIcon: ({ color, size }) => (

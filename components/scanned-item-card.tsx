@@ -33,7 +33,7 @@ type ScannedItemCardProps = WithActionBtn | WithoutActionBtn
 
 const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollapse, onDelete, onUpdate }: ScannedItemCardProps) => {
     const [isEditState, setIsEditState] = React.useState(false)
-    const [isCollapsed, setIsCollapsed] = React.useState(() => defaultCollapse??false)
+    const [isCollapsed, setIsCollapsed] = React.useState(() => defaultCollapse ?? false)
 
     const quantityRef = React.useRef<any>(null)
 
@@ -59,7 +59,7 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
                 quantity: item.quantity
             })
         }
-    }, [isEditState, item.quantity])
+    }, [isEditState, item.quantity, form])
 
     return (
         <Card className='bg-white border-muted my-0.5 p-2 gap-4'>
@@ -113,7 +113,7 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
                                     <DetailsRow icon={{ library: 'FontAwesome', name: 'hashtag' }} label='item code' value={item.item_code ?? "N/A"} />
                                 </View>
                                 <Button className='flex-row items-center gap-1' size={'sm'} onPress={async () => {
-                                    await copyToClipboard(item.barcode??"")
+                                    await copyToClipboard(item.barcode ?? "")
                                 }}>
                                     <Text className='text-white'>
                                         <FontAwesome6 name='copy' color="#fff" />
@@ -121,7 +121,7 @@ const ScannedItemCard = ({ item, enableActionBtn, isCollapseAble, defaultCollaps
                                     <Text className='text-white'>
                                         Barcode
                                     </Text>
-                                </Button>                                
+                                </Button>
                             </View>
                             <DetailsRow icon={{ library: 'FontAwesome', name: 'file-text' }} label='description' value={item.description ?? "N/A"} />
                         </CardContent>
