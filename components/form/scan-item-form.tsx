@@ -43,9 +43,9 @@ import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Text } from "../ui/text";
 import { useInsertStoredScannedItemMutation } from "@/hooks/tanstack-query/mutation/insert-stored-scanned-item-mutation";
+import { usePersistAdvanceMode } from "@/hooks/use-persist-advance-mode";
 
 export default function ScanItemForm() {
-  const [isHydrated, setIsHydrated] = React.useState(false);
   const [triggerWidth, setTriggerWidth] = React.useState(0);
   const { isTimerFinish, startTimer } = useCountDown(5);
   const quantityInputRef = React.useRef<any>(null);
@@ -116,11 +116,7 @@ export default function ScanItemForm() {
       }
 
       getItemDetailsMutation(
-        {
-          barcode: code,
-          isAdvanceModeEnable,
-          scanFor,
-        },
+        { barcode: code, isAdvanceModeEnable, scanFor },
         {
           onSuccess(data) {
             if (data.data) {
@@ -157,39 +153,7 @@ export default function ScanItemForm() {
   }, [getFormValues, handleOnSubmitEditing]);
 
   useDefaultUnitFromItemDetails(form, itemDetails?.data ?? null);
-
-  useEffect(() => {
-    const loadAdvanceMode = async () => {
-      const storedIsAdvanceModeEnable = await getSecureStoreValueFor<boolean>(
-        "isAdvanceModeEnable",
-      );
-      const storedScanFor = await getSecureStoreValueFor<
-        (typeof multitaskVariantValues)[number] | undefined
-      >("scanFor");
-      console.log({ storedIsAdvanceModeEnable });
-      resetForm({
-        ...getFormValues(),
-        barcode: "",
-        unitId: "",
-        isAdvanceModeEnable: storedIsAdvanceModeEnable,
-        scanFor: storedIsAdvanceModeEnable
-          ? (storedScanFor ?? "Inventory")
-          : undefined,
-      });
-      console.log({ getFormValues: getFormValues() });
-      setIsHydrated(true);
-    };
-    loadAdvanceMode();
-  }, [setFormValue, getFormValues, resetForm]);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-    const sync = async () => {
-      await saveIntoSecureStore("isAdvanceModeEnable", isAdvanceModeEnable);
-      await saveIntoSecureStore("scanFor", scanFor);
-    };
-    sync();
-  }, [isHydrated, isAdvanceModeEnable, scanFor]);
+  const { isHydrated } = usePersistAdvanceMode(form);
 
   if (!isHydrated) return null;
 
@@ -352,7 +316,8 @@ export default function ScanItemForm() {
                       className="flex-row gap-0"
                     >
                       {multitaskVariantValues.map((variant) => {
-                        const isActive = getFormValues("scanFor") === variant;
+                        const isActive = field.value === variant;
+
                         return (
                           <Pressable
                             onPress={() => field.onChange(variant)}
@@ -401,7 +366,12 @@ export default function ScanItemForm() {
           {itemDetails && itemDetails.data && (
             <>
               <ItemDetails
-                header={{ title: "Item Details", description: "Scanned item" }}
+                header={{
+                  title: "Item Details",
+                  description: itemDetails.data.storedItem
+                    ? "Duplicate scan for order"
+                    : "Scanned item",
+                }}
                 item={itemDetails.data}
               />
               <Separator className="my-3" />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { DetailsRow } from "./details-row";
 import { Badge } from "./ui/badge";
@@ -6,10 +6,18 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "./ui/card";
 import { getItemDetailsByBarcodeWithAdvanceFeature } from "@/data-access-layer/get-item";
+import { consoleLog } from "@/lib/log";
+import { Button } from "./ui/button";
+import { FontAwesome6, MaterialIcons } from "@expo/vector-icons";
+import { Separator } from "./ui/separator";
+import { Controller, useForm } from "react-hook-form";
+import { Input } from "./ui/input";
+import { ItemQuantityUnit } from "./scanned-item-card";
 
 type ScannedItemCardHeader = {
   title: string;
@@ -26,18 +34,36 @@ type ScannedItemCardProps = {
 };
 
 export const ItemDetails = ({ header, item }: ScannedItemCardProps) => {
+  const [isEditState, setIsEditState] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      quantity: item.storedItem?.quantity ?? 0,
+    },
+  });
+  consoleLog({
+    from: "inside item details",
+    item,
+  });
+
   return (
     <Card className="bg-white border-muted my-1 p-3 gap-4">
       <CardHeader className="flex-row items-center justify-between px-0">
         <View>
           <CardTitle className="text-black">{header.title}</CardTitle>
           <CardDescription className="text-black">
-            {header.description || "628155"}
+            {header.description || ""}
           </CardDescription>
         </View>
 
         <View className="flex-row items-center gap-2 px-0">
-          <ItemPriceUnit price={item.price} uom={item?.unitName || "N/A"} />
+          {item.storedItem ? (
+            <Button variant={"destructive"} size={"sm"} onPress={() => {}}>
+              <FontAwesome6 name={"trash"} size={14} color={"#fff"} />
+            </Button>
+          ) : (
+            <ItemPriceUnit price={item.price} uom={item?.unitName || "N/A"} />
+          )}
         </View>
       </CardHeader>
 
@@ -53,6 +79,52 @@ export const ItemDetails = ({ header, item }: ScannedItemCardProps) => {
           value={item?.description ?? "N/A"}
         />
       </CardContent>
+
+      {item.storedItem && (
+        <>
+          <Separator />
+          <CardFooter className="items-center justify-between px-0">
+            <View className="flex-row items-center gap-2">
+              <View className="flex-row items-center justify-center w-8 h-8 bg-[#E8F1FC] rounded-md">
+                <MaterialIcons name={"layers"} color={"#124DA1"} size={20} />
+              </View>
+              <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Order Quantity
+              </Text>
+            </View>
+
+            {isEditState ? (
+              <View>
+                <Controller
+                  control={form.control}
+                  name="quantity"
+                  render={({ field: { onChange, value } }) => (
+                    <Input
+                      className="h-8 w-28" // same height & width as badge
+                      returnKeyType="go"
+                      keyboardType="numeric"
+                      onSubmitEditing={() => {
+                        setIsEditState(false);
+                      }}
+                      onChangeText={onChange}
+                      onBlur={() => setIsEditState(false)}
+                      value={value.toString()}
+                    />
+                  )}
+                />
+              </View>
+            ) : (
+              <ItemQuantityUnit
+                quantity={Number(item.storedItem.quantity) ?? "0"}
+                uom={item.unitName ?? "N/A"}
+                onPress={() => {
+                  setIsEditState((prev) => !prev);
+                }}
+              />
+            )}
+          </CardFooter>
+        </>
+      )}
     </Card>
   );
 };

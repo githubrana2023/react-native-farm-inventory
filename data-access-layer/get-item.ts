@@ -19,8 +19,6 @@ export const getItemByScanBarcode = async ({
   scanFor: (typeof multitaskVariantValues)[number] | undefined;
   isAdvanceModeEnable: boolean;
 }) => {
-  consoleLog({ scanFor, isAdvanceModeEnable, scannedBarcode });
-
   const [itemResponse] = await db
     .select()
     .from(barcodeTable)
@@ -144,8 +142,6 @@ export const getStoredScannedItems = async (query?: string) => {
     desc(storedScannedItemTable.createdAt),
   );
 
-  consoleLog(storedScannedItems[0]);
-
   return storedScannedItems.map(
     ({ barcode, stored_scanned_item, item, unit }) => {
       return {
@@ -199,63 +195,48 @@ export type StoredItem = NonNullable<
  */
 
 type StoredScanned = {
-  item: {
-    id: string;
-    supplierId: string;
-    item_code: string;
-    item_description: string;
-    createdAt: Date;
-    updatedAt: Date;
-  } | null;
-  barcode: {
-    id: string;
-    barcode: string;
-    price: number;
-    promoPrice: number | null;
-    description: string | null;
-    itemId: string;
-    unitId: string;
-    createdAt: Date;
-    updatedAt: Date;
-  };
-  stored_scanned_item: {
-    id: string;
-    barcodeId: string;
-    unitId: string;
-    quantity: number;
-    scanFor: "Inventory" | "Tags" | "Order" | null;
-    createdAt: Date;
-    updatedAt: Date;
-  } | null;
+  storedId: string | undefined;
+  item_code: string | undefined;
+  description: string | null | undefined;
+  quantity: string | undefined;
+  unitName: string;
+  scanFor: "Inventory" | "Tags" | "Order" | null | undefined;
 };
 
-type Data = {
+type WithoutOrder = {
   units: {
     id: string;
     unitName: string;
     packing: number;
   }[];
   id: string;
+  unitId: string;
   unitName: string;
-  packing: number;
-  createdAt: Date;
-  updatedAt: Date;
   barcode: string;
   price: number;
-  promoPrice: number | null;
-  description: string | null;
-  itemId: string;
-  unitId: string;
-  supplierId: string;
   item_code: string;
   item_description: string;
+  isScanForOrder: false;
+  storedItem?: undefined;
 };
-
-type WithStored = Data & {
+type WithOrder = {
+  units: {
+    id: string;
+    unitName: string;
+    packing: number;
+  }[];
+  id: string;
+  unitId: string;
+  unitName: string;
+  barcode: string;
+  price: number;
+  item_code: string;
+  item_description: string;
+  isScanForOrder: true;
   storedItem: StoredScanned;
 };
 
-type ResponseData = Data | WithStored;
+type ResponseData = WithOrder | WithoutOrder;
 
 export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
   scanFor,
@@ -265,9 +246,7 @@ export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
   barcode: string;
   scanFor: (typeof multitaskVariantValues)[number] | undefined;
   isAdvanceModeEnable: boolean;
-}): Promise<{ msg: string; data: ResponseData | null }> => {
-  consoleLog({ scanFor, isAdvanceModeEnable, scannedBarcode });
-
+}) => {
   const [itemResponse] = await db
     .select()
     .from(barcodeTable)
@@ -307,6 +286,17 @@ export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
    * 4. if exist return the stored data
    *
    */
+
+  const detailsWithoutOrderData = {
+    item_code: item.item_code,
+    description: item.item_description,
+    price: barcode.price,
+    unitName: unit.unitName,
+    unitId: barcode.unitId,
+    units,
+    storedItem: undefined,
+  };
+
   const isScanForOrder = isAdvanceModeEnable && scanFor === "Order";
 
   const storedItemsByItemCode = await db
@@ -317,6 +307,7 @@ export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
       barcodeTable,
       eq(barcodeTable.id, storedScannedItemTable.barcodeId),
     )
+    .rightJoin(unitTable, eq(unitTable.id, storedScannedItemTable.unitId))
     .where(
       and(
         eq(itemTable.item_code, item.item_code),
@@ -326,34 +317,29 @@ export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
 
   const hasStoredItems = storedItemsByItemCode.length > 0;
 
-  const data = {
-    ...item,
-    ...barcode,
-    ...unit,
-    units,
-  };
-
   if (isScanForOrder && hasStoredItems) {
-    const [existStored] = storedItemsByItemCode;
-
-    consoleLog({
-      ...data,
-      storedItem: existStored,
-    });
+    const [{ stored_scanned_item, item, barcode, unit }] =
+      storedItemsByItemCode;
 
     return {
       msg: "Duplicate item scanned for order!",
       data: {
-        ...data,
-        storedItem: existStored,
+        ...detailsWithoutOrderData,
+        storedItem: {
+          storedId: stored_scanned_item?.id,
+          description: barcode?.description,
+          item_code: item?.item_code,
+          quantity: stored_scanned_item?.quantity.toString(),
+          scanFor: stored_scanned_item?.scanFor,
+          unitName: unit.unitName,
+        },
       },
     };
   }
 
-  consoleLog(data);
-
   return {
     msg: "item found",
-    data,
+
+    data: detailsWithoutOrderData,
   };
 };

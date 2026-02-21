@@ -224,7 +224,7 @@ type ItemQuantityUnitProps = {
   uom: string;
 } & React.ComponentProps<typeof Text>;
 
-const ItemQuantityUnit = ({
+export const ItemQuantityUnit = ({
   quantity,
   uom,
   ...props

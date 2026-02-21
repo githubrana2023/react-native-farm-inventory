@@ -81,8 +81,6 @@ export const insertScannedItem = async (payload: ScanItemFormData) => {
     })
     .returning();
 
-  consoleLog({ inserted: addedItem });
-
   return {
     msg: "Item Added",
     data: addedItem,
