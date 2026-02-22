@@ -160,29 +160,37 @@ export const getStoredScannedItems = async (query?: string) => {
 };
 
 export const getItemByBarcode = async (barcode: string) => {
-  const storedScannedItems = await db
-    .select()
-    .from(barcodeTable)
-    .leftJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
-    .leftJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
-    .leftJoin(supplierTable, eq(supplierTable.id, itemTable.supplierId))
-    .where(eq(barcodeTable.barcode, barcode));
+  try {
+    const existItems = await db
+      .select()
+      .from(barcodeTable)
+      .innerJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
+      .innerJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
+      .innerJoin(supplierTable, eq(supplierTable.id, itemTable.supplierId))
+      .where(eq(barcodeTable.barcode, barcode));
 
-  const [item] = storedScannedItems.map(({ barcode, supplier, item, unit }) => {
-    return {
-      barcode: barcode?.barcode,
-      item_code: item?.item_code,
-      description: item?.item_description,
-      unitName: unit?.unitName,
-      unitPacking: unit?.packing,
-      price: barcode.price,
-      promoPrice: barcode.promoPrice,
-      supplierName: supplier?.supplierName,
-      supplierCode: supplier?.supplierCode,
-    };
-  });
+    if (existItems.length < 1)
+      return failureResponse("Item not found!", "NOT_FOUND");
 
-  return item;
+    const [item] = existItems.map(({ barcode, supplier, item, unit }) => {
+      return {
+        barcode: barcode?.barcode,
+        item_code: item?.item_code,
+        description: item?.item_description,
+        unitName: unit?.unitName,
+        unitPacking: unit?.packing,
+        price: barcode.price,
+        promoPrice: barcode.promoPrice,
+        supplierName: supplier?.supplierName,
+        supplierCode: supplier?.supplierCode,
+      };
+    });
+
+    return successResponse(item, "Item found!");
+  } catch (error) {
+    console.error(error);
+    return failureResponse("Unexpected error during getting item by barcode!");
+  }
 };
 
 export type StoredItem = NonNullable<

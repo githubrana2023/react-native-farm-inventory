@@ -1,191 +1,195 @@
-"use client"
-import Container from "@/components/container"
-import {
-    Button
-} from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Text } from "@/components/ui/text"
-import { db } from "@/drizzle/db"
-import { barcodeTable, itemTable, unitTable } from "@/drizzle/schema"
-import { randomInt, randomPrice } from "@/drizzle/seed/seeding-factory"
-import { copyToClipboard } from "@/lib/utils"
-import {
-    zodResolver
-} from "@hookform/resolvers/zod"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { desc, eq } from "drizzle-orm"
-import { useTransition } from "react"
-import {
-    useForm
-} from "react-hook-form"
-import { FlatList, View } from "react-native"
-import {
-    z
-} from "zod"
-import { NavLink } from "."
-import { SeedItemDisplayCard } from "./seed-suppliers"
+"use client";
+import Container from "@/components/container";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { db } from "@/drizzle/db";
+import { barcodeTable, itemTable, unitTable } from "@/drizzle/schema";
+import { randomInt, randomPrice } from "@/drizzle/seed/seeding-factory";
+import { copyToClipboard } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { desc, eq } from "drizzle-orm";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { FlatList, View } from "react-native";
+import { z } from "zod";
+import { NavLink } from ".";
+import { SeedItemDisplayCard } from "./seed-suppliers";
 
 const formSchema = z.object({
-    seedQuantity: z.string(),
-    item_code: z.string(),
+  seedQuantity: z.string(),
+  item_code: z.string(),
 });
 
-
 const useGetBarcode = () => {
-    return useQuery({
-        queryKey: ["seed-barcode"],
-        queryFn: async () => {
-
-            return await db.select().from(barcodeTable)
-
-        }
-    })
-}
-
-
+  return useQuery({
+    queryKey: ["seed-barcode"],
+    queryFn: async () => {
+      return await db.select().from(barcodeTable);
+    },
+  });
+};
 
 function generatePromoPriceWithCheck(regularPrice: number) {
-    if (regularPrice <= 0) throw new Error("Regular price must be greater than 0");
+  if (regularPrice <= 0)
+    throw new Error("Regular price must be greater than 0");
 
-    // Step 1: random number between 1 and 10
-    const randomNum = Math.floor(Math.random() * 10) + 1;
+  // Step 1: random number between 1 and 10
+  const randomNum = Math.floor(Math.random() * 10) + 1;
 
-    // Step 2: check if even
-    const isEven = randomNum % 2 === 0;
+  // Step 2: check if even
+  const isEven = randomNum % 2 === 0;
 
-    // Step 3: generate promo price less than regularPrice
-    const promoPrice = Number((Math.random() * (regularPrice - 0.01) + 0.01).toFixed(2));
+  // Step 3: generate promo price less than regularPrice
+  const promoPrice = Number(
+    (Math.random() * (regularPrice - 0.01) + 0.01).toFixed(2),
+  );
 
-    // Step 4: return
-    return { promoPrice, isEven };
+  // Step 4: return
+  return { promoPrice, isEven };
 }
 
+const seedItem = async ({
+  item_code,
+  seedQuantity,
+}: z.infer<typeof formSchema>) => {
+  const [item] = await db
+    .select({ id: itemTable.id, description: itemTable.item_description })
+    .from(itemTable)
+    .where(eq(itemTable.item_code, item_code));
+  if (!item) return { data: null, msg: "Item not exist!" };
 
+  const units = await db.select().from(unitTable);
+  const unitLength = units.length - 1;
 
+  for (let i = 0; i < Number(seedQuantity); i++) {
+    const [barcode] = await db
+      .select({ barcode: barcodeTable.barcode, unitId: barcodeTable.unitId })
+      .from(barcodeTable)
+      .orderBy(desc(barcodeTable.barcode));
+    const lastBarcode = barcode
+      ? (Number(barcode.barcode) + 1).toString()
+      : "6285696558241";
 
-const seedItem = async ({ item_code, seedQuantity }: z.infer<typeof formSchema>) => {
-    const [item] = await db.select({ id: itemTable.id, description: itemTable.item_description }).from(itemTable).where(eq(itemTable.item_code, item_code))
-    if (!item) return { data: null, msg: "Item not exist!" }
+    const unitIndex = randomInt(0, unitLength);
+    let unit = units[unitIndex > unitLength ? unitLength : unitIndex];
+    const price = randomPrice();
+    const { isEven, promoPrice } = generatePromoPriceWithCheck(price);
 
-    const units = await db.select().from(unitTable)
-    const unitLength = units.length - 1
-
-    for (let i = 0; i < Number(seedQuantity); i++) {
-        const [barcode] = await db.select({ barcode: barcodeTable.barcode, unitId: barcodeTable.unitId }).from(barcodeTable).orderBy(desc(barcodeTable.barcode))
-        const lastBarcode = barcode ? (Number(barcode.barcode) + 1).toString() : "6285696558241"
-
-        const unitIndex = randomInt(0, unitLength)
-        let unit = units[unitIndex > unitLength ? unitLength : unitIndex]
-        const price = randomPrice()
-        const { isEven, promoPrice } = generatePromoPriceWithCheck(price)
-
-        while (barcode && unit.id === barcode.unitId) {
-            unit = units[randomInt(0, unitLength)]
-        }
-
-        await db.insert(barcodeTable).values({
-            barcode: lastBarcode,
-            itemId: item.id,
-            price,
-            promoPrice: isEven ? promoPrice : null,
-            unitId: unit.id,
-            description: item.description
-        })
+    while (barcode && unit.id === barcode.unitId) {
+      unit = units[randomInt(0, unitLength)];
     }
-}
 
-
+    await db.insert(barcodeTable).values({
+      barcode: lastBarcode,
+      itemId: item.id,
+      price,
+      promoPrice: isEven ? promoPrice : null,
+      unitId: unit.id,
+      description: item.description,
+    });
+  }
+};
 
 export default function SeedItemFrom() {
-    const [pending, startTransition] = useTransition()
-    const { data: barcodes, isSuccess: barcodeIsSuccess, refetch } = useGetBarcode()
-    const qc = useQueryClient()
+  const [pending, startTransition] = useTransition();
+  const {
+    data: barcodes,
+    isSuccess: barcodeIsSuccess,
+    refetch,
+  } = useGetBarcode();
+  const qc = useQueryClient();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            item_code: "01010101-00"
-        }
-    })
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      item_code: "01010101-00",
+    },
+  });
 
-    const onSubmit = form.handleSubmit(values => {
-        startTransition(
-            async () => {
-                await seedItem(values)
-                await qc.invalidateQueries({ queryKey: ['seed-barcode'] })
-                refetch()
-            }
-        )
-    })
-    if (!barcodeIsSuccess) return (
-        <View className="my-3">
-            <NavLink />
-        </View>
-    )
-
+  const onSubmit = form.handleSubmit((values) => {
+    startTransition(async () => {
+      await seedItem(values);
+      await qc.invalidateQueries({ queryKey: ["seed-barcode"] });
+      refetch();
+    });
+  });
+  if (!barcodeIsSuccess)
     return (
-        <Container>
-            <View className="my-3">
-                <NavLink />
-            </View>
-            <Form {...form}>
-                <FormField
-                    control={form.control}
-                    name="seedQuantity"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <Input
-                                    {...field}
-                                    placeholder="Seed Quantity"
-                                    returnKeyType="next"
-                                    onChangeText={field.onChange}
-                                    value={field.value}
-                                />
-                            </FormControl>
-                        </FormItem>
-                    )}
+      <View className="my-3">
+        <NavLink />
+      </View>
+    );
+
+  return (
+    <Container>
+      <View className="my-3">
+        <NavLink />
+      </View>
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="seedQuantity"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Seed Quantity"
+                  returnKeyType="next"
+                  onChangeText={field.onChange}
+                  value={field.value}
                 />
-                <FormField
-                    control={form.control}
-                    name="item_code"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <Input
-                                    {...field}
-                                    placeholder="Seed Quantity"
-                                    returnKeyType="go"
-                                    onChangeText={field.onChange}
-                                    value={field.value}
-                                    onSubmitEditing={() => onSubmit()}
-                                />
-                            </FormControl>
-                        </FormItem>
-                    )}
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="item_code"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Seed Quantity"
+                  returnKeyType="go"
+                  onChangeText={field.onChange}
+                  value={field.value}
+                  onSubmitEditing={() => onSubmit()}
                 />
-                <Button onPress={onSubmit}>
-                    <Text>Seed Barcode</Text>
-                </Button>
-            </Form>
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <View className="flex-row gap-2 items-center">
+          <Button onPress={onSubmit} className="flex-1">
+            <Text>Seed Barcode</Text>
+          </Button>
+          <Button onPress={() => refetch()}>
+            <Text>Refetch</Text>
+          </Button>
+        </View>
+      </Form>
 
-            <FlatList
-                data={barcodes}
-                renderItem={({ item, index }) => (
-                    <SeedItemDisplayCard
-                        label={`${item.barcode} ${item.promoPrice ?? "null"}  #${index + 1}`}
-                        onDelete={async () => {
-                            await db.delete(barcodeTable).where(eq(barcodeTable.id, item.id))
-                            qc.invalidateQueries({ queryKey: ['seed-barcode'] })
-                        }}
-                        onCopy={async () => { await copyToClipboard(item.barcode) }}
-
-                        disabled={false}
-
-                    />
-                )}
-            />
-        </Container>
-    )
+      <FlatList
+        data={barcodes}
+        renderItem={({ item, index }) => (
+          <SeedItemDisplayCard
+            label={`${item.barcode} ${item.promoPrice ?? "null"}  #${index + 1}`}
+            onDelete={async () => {
+              await db.delete(barcodeTable).where(eq(barcodeTable.id, item.id));
+              qc.invalidateQueries({ queryKey: ["seed-barcode"] });
+            }}
+            onCopy={async () => {
+              await copyToClipboard(item.barcode);
+            }}
+            disabled={false}
+          />
+        )}
+      />
+    </Container>
+  );
 }

@@ -63,11 +63,13 @@ export const ItemDetails = ({
 
   const onSubmitEditing = form.handleSubmit(({ quantity: latestQuantity }) => {
     setLatestQuantity(latestQuantity);
-    dispatch(onOpen("update"));
+    dispatch(onOpen("item-details-update"));
   });
 
-  const isDeleteAlertModalOpen = isOpen && type === "delete" && !!onDelete;
-  const isUpdateAlertModalOpen = isOpen && type === "update" && !!onUpdate;
+  const isDeleteAlertModalOpen =
+    isOpen && type === "item-details-delete" && !!onDelete;
+  const isUpdateAlertModalOpen =
+    isOpen && type === "item-details-update" && !!onUpdate;
 
   const alertTitle = `Sure? Scanned order item will ${isDeleteAlertModalOpen ? "be deleted" : "update"}!`;
   const alertDescription =
@@ -80,7 +82,6 @@ export const ItemDetails = ({
       item.storedItem &&
       item.storedItem.storedId
     ) {
-      consoleLog("delete modal");
       onDelete(item);
     }
     if (
@@ -90,8 +91,6 @@ export const ItemDetails = ({
       item.storedItem.storedId
     ) {
       onUpdate(item, latestQuantity);
-      console.log({ latestQuantity });
-      consoleLog("update modal");
     }
   };
 
@@ -128,7 +127,7 @@ export const ItemDetails = ({
                 <Button
                   variant={"destructive"}
                   size={"sm"}
-                  onPress={() => dispatch(onOpen("delete"))}
+                  onPress={() => dispatch(onOpen("item-list-delete"))}
                 >
                   <FontAwesome6 name={"trash"} size={14} color={"#fff"} />
                 </Button>

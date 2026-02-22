@@ -1,19 +1,21 @@
-import React from 'react'
-import { FormControl, FormItem, FormMessage } from './ui/form'
-import { Input } from './ui/input'
+import React from "react";
+import { FormControl, FormDescription, FormItem, FormMessage } from "./ui/form";
+import { Input } from "./ui/input";
 
+type InputFieldProps = React.ComponentProps<typeof Input> & {
+  description?: string;
+};
 
-type InputFieldProps = React.ComponentProps<typeof Input>
+const InputField = ({ description, ...inputProps }: InputFieldProps) => {
+  return (
+    <FormItem>
+      <FormControl>
+        <Input {...inputProps} />
+      </FormControl>
+      {description && <FormDescription>{description}</FormDescription>}
+      <FormMessage />
+    </FormItem>
+  );
+};
 
-const InputField = (inputProps: InputFieldProps) => {
-    return (
-        <FormItem>
-            <FormControl>
-                <Input{...inputProps} />
-            </FormControl>
-            <FormMessage />
-        </FormItem>
-    )
-}
-
-export default InputField
+export default InputField;

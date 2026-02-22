@@ -102,14 +102,14 @@ export default function ScanItemForm() {
   //! handle submit function
   const onSubmit = handleSubmit(async (value) => {
     insertStoredScannedItemMutation(value, {
-      async onSuccess({ data, msg }) {
+      async onSuccess(res) {
         Toast.show({
-          type: data ? "success" : "error",
-          text1: msg,
+          type: res.success ? "success" : "error",
+          text1: res.message,
         });
-        if (!data) return;
-        refetchStoredItems();
         resetItemDetailsMutation();
+        if (!res.success) return;
+        refetchStoredItems();
       },
     });
     handleResetForm();
@@ -128,15 +128,12 @@ export default function ScanItemForm() {
       getItemDetailsMutation(
         { barcode: code, isAdvanceModeEnable, scanFor },
         {
-          onSuccess(data) {
-            if (data.data) {
-              Toast.show({
-                type: "success",
-                text1: "item found",
-              });
-              quantityInputRef.current?.focus();
-              return;
-            }
+          onSuccess(res) {
+            Toast.show({
+              type: res.success ? "success" : "error",
+              text1: res.message,
+            });
+            !res?.data?.storedItem && quantityInputRef.current?.focus();
           },
         },
       );

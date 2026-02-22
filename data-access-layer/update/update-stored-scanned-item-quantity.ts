@@ -1,6 +1,7 @@
 import { db } from "@/drizzle/db";
 import { storedScannedItemTable } from "@/drizzle/schema";
 import { failureResponse, successResponse } from "@/lib/action-response";
+import { consoleLog } from "@/lib/log";
 import { eq } from "drizzle-orm";
 
 export const updateScannedItemQuantity = async (payload: {
@@ -9,7 +10,7 @@ export const updateScannedItemQuantity = async (payload: {
 }) => {
   try {
     //Quantity must be more than 0
-    if (Number(payload.quantity) > 0)
+    if (Number(payload.quantity) < 0)
       return failureResponse("Quantity must be grater than 0!");
 
     // if stored scanned item exist then continue
@@ -35,6 +36,6 @@ export const updateScannedItemQuantity = async (payload: {
     );
   } catch (error) {
     console.error(error);
-    return failureResponse("unexpeted error during update the stored item");
+    return failureResponse("Unexpected error during update the stored item");
   }
 };

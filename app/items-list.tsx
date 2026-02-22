@@ -31,8 +31,8 @@ const ItemsList = () => {
   const { mutate: updateMutate } = useUpdateScannedItemQuantityMutation();
   const qs = useQueryClient();
   const { isOpen, type } = useAlertModal();
-  const isUpdateAlertModalOpen = type === "update" && isOpen;
-  const isDeleteAlertModalOpen = type === "delete" && isOpen;
+  const isUpdateAlertModalOpen = type === "item-list-update" && isOpen;
+  const isDeleteAlertModalOpen = type === "item-list-delete" && isOpen;
   const dispatch = useAppDispatch();
 
   const data = searchInputValue.length > 0 ? searchedData : allData;
@@ -69,7 +69,7 @@ const ItemsList = () => {
           onError() {
             Toast.show({
               type: "error",
-              text1: "Unexpeted error occurred!",
+              text1: "Unexpected error occurred!",
             });
           },
         },
@@ -147,11 +147,11 @@ const ItemsList = () => {
               isCollapseAble
               defaultCollapse={index !== 0}
               onDelete={(item) => {
-                dispatch(onOpen("delete"));
+                dispatch(onOpen("item-list-delete"));
                 setActionState({ type: "delete", item });
               }}
               onUpdate={(item) => {
-                dispatch(onOpen("update"));
+                dispatch(onOpen("item-list-update"));
                 setActionState({ type: "update", item });
               }}
             />
