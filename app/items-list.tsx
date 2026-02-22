@@ -52,24 +52,24 @@ const ItemsList = () => {
           storedScannedItemId: actionState.item.storedId,
         },
         {
-          async onSuccess(data) {
+          async onSuccess(res) {
             await qs.invalidateQueries({
               queryKey: ["get-stored-scanned-items-search", searchInputValue],
             });
             if (searchInputValue.length > 0) {
               refetchSearch();
             }
-            if (!data.data) {
-              Toast.show({
-                type: "error",
-                text1: data?.msg,
-              });
-              return;
-            }
-            refetch();
+
             Toast.show({
-              type: "success",
-              text1: data?.msg,
+              type: res.success ? "success" : "error",
+              text1: res.message,
+            });
+            res.success && refetch();
+          },
+          onError() {
+            Toast.show({
+              type: "error",
+              text1: "Unexpeted error occurred!",
             });
           },
         },
@@ -88,7 +88,7 @@ const ItemsList = () => {
           dispatch(onClose());
           Toast.show({
             type: "success",
-            text1: data.msg,
+            text1: data.message,
           });
         },
       });

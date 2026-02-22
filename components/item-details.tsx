@@ -20,10 +20,6 @@ import { Input } from "./ui/input";
 import { ItemQuantityUnit } from "./scanned-item-card";
 import { useRestoreQuantity } from "@/hooks/use-restore-quantity";
 import AlertModal from "./alert-modal";
-import { useDeleteScannedItemQuantityMutation } from "@/hooks/tanstack-query/mutation/delete-stored-scanned-item-mutation";
-import { useGetStoredScannedItems } from "@/hooks/tanstack-query/item-query";
-import { useGetItemDetailsMutationWithFeature } from "@/hooks/tanstack-query/mutation/get-item-details-mutation";
-import { useUpdateScannedItemQuantityMutation } from "@/hooks/tanstack-query/mutation/update-stored-scanned-item-quantity-mutation";
 import { useAlertModal, useAppDispatch } from "@/hooks/redux";
 import { onClose, onOpen } from "@/lib/redux/slice/alert-modal-slice";
 
@@ -115,6 +111,7 @@ export const ItemDetails = ({
         style={{ maxHeight: height * 0.4 }}
         contentContainerStyle={{ paddingBottom: 20 }}
         nestedScrollEnabled
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <Card className="bg-white border-muted my-1 p-3 gap-4">
