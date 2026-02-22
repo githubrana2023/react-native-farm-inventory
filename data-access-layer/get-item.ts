@@ -7,6 +7,7 @@ import {
   supplierTable,
   unitTable,
 } from "@/drizzle/schema";
+import { failureResponse, successResponse } from "@/lib/action-response";
 import { consoleLog } from "@/lib/log";
 import { and, desc, eq, like, or } from "drizzle-orm";
 
@@ -247,99 +248,95 @@ export const getItemDetailsByBarcodeWithAdvanceFeature = async ({
   scanFor: (typeof multitaskVariantValues)[number] | undefined;
   isAdvanceModeEnable: boolean;
 }) => {
-  const [itemResponse] = await db
-    .select()
-    .from(barcodeTable)
-    .innerJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
-    .innerJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
-    .where(eq(barcodeTable.barcode, scannedBarcode));
+  try {
+    const [itemResponse] = await db
+      .select()
+      .from(barcodeTable)
+      .innerJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
+      .innerJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
+      .where(eq(barcodeTable.barcode, scannedBarcode));
 
-  if (!itemResponse || !itemResponse.barcode || !itemResponse.unit)
-    return {
-      msg: "Item not found!",
-      data: null,
+    if (!itemResponse) return failureResponse("Item not found!", "NOT_FOUND");
+
+    const { barcode, item, unit } = itemResponse;
+
+    const units = await db
+      .select({
+        id: unitTable.id,
+        unitName: unitTable.unitName,
+        packing: unitTable.packing,
+      })
+      .from(barcodeTable)
+      .innerJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
+      .where(eq(barcodeTable.itemId, item.id));
+
+    //! GET ALREADY SCANNED ITEM
+
+    /**
+     * advance feature implement
+     *
+     * 1. is advance mode on
+     * 2. is scan for order
+     * 3. is there are any storedItems that already scanned for order
+     * 4. if exist return the stored data
+     *
+     */
+
+    const detailsWithoutOrderData = {
+      item_code: item.item_code,
+      description: item.item_description,
+      price: barcode.price,
+      unitName: unit.unitName,
+      unitId: barcode.unitId,
+      units,
+      storedItem: undefined,
     };
 
-  const { barcode, item, unit } = itemResponse;
+    const isScanForOrder = isAdvanceModeEnable && scanFor === "Order";
 
-  const barcodeUnits = await db
-    .select()
-    .from(barcodeTable)
-    .rightJoin(unitTable, eq(unitTable.id, barcodeTable.unitId))
-    .where(eq(barcodeTable.itemId, item.id));
+    const storedItemsByItemCode = await db
+      .select()
+      .from(storedScannedItemTable)
+      .innerJoin(
+        barcodeTable,
+        eq(barcodeTable.id, storedScannedItemTable.barcodeId),
+      )
+      .innerJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
+      .rightJoin(unitTable, eq(unitTable.id, storedScannedItemTable.unitId))
+      .where(
+        and(
+          eq(itemTable.item_code, item.item_code),
+          eq(storedScannedItemTable.scanFor, "Order"),
+        ),
+      );
 
-  const units = barcodeUnits.map(({ unit }) => {
-    const { createdAt, updatedAt, ...rest } = unit;
-    return {
-      ...rest,
-    };
-  });
+    const hasStoredItems = storedItemsByItemCode.length > 0;
 
-  //! GET ALREADY SCANNED ITEM
+    if (isScanForOrder && hasStoredItems) {
+      const [{ stored_scanned_item, item, barcode, unit }] =
+        storedItemsByItemCode;
 
-  /**
-   * advance feature implement
-   *
-   * 1. is advance mode on
-   * 2. is scan for order
-   * 3. is there are any storedItems that already scanned for order
-   * 4. if exist return the stored data
-   *
-   */
-
-  const detailsWithoutOrderData = {
-    item_code: item.item_code,
-    description: item.item_description,
-    price: barcode.price,
-    unitName: unit.unitName,
-    unitId: barcode.unitId,
-    units,
-    storedItem: undefined,
-  };
-
-  const isScanForOrder = isAdvanceModeEnable && scanFor === "Order";
-
-  const storedItemsByItemCode = await db
-    .select()
-    .from(storedScannedItemTable)
-    .innerJoin(itemTable, eq(itemTable.id, barcodeTable.itemId))
-    .rightJoin(
-      barcodeTable,
-      eq(barcodeTable.id, storedScannedItemTable.barcodeId),
-    )
-    .rightJoin(unitTable, eq(unitTable.id, storedScannedItemTable.unitId))
-    .where(
-      and(
-        eq(itemTable.item_code, item.item_code),
-        eq(storedScannedItemTable.scanFor, "Order"),
-      ),
-    );
-
-  const hasStoredItems = storedItemsByItemCode.length > 0;
-
-  if (isScanForOrder && hasStoredItems) {
-    const [{ stored_scanned_item, item, barcode, unit }] =
-      storedItemsByItemCode;
-
-    return {
-      msg: "Duplicate item scanned for order!",
-      data: {
-        ...detailsWithoutOrderData,
-        storedItem: {
-          storedId: stored_scanned_item?.id,
-          description: barcode?.description,
-          item_code: item?.item_code,
-          quantity: stored_scanned_item?.quantity.toString(),
-          scanFor: stored_scanned_item?.scanFor,
-          unitName: unit.unitName,
+      return successResponse(
+        {
+          ...detailsWithoutOrderData,
+          storedItem: {
+            storedId: stored_scanned_item?.id,
+            description: barcode?.description,
+            item_code: item?.item_code,
+            quantity: stored_scanned_item?.quantity.toString(),
+            scanFor: stored_scanned_item?.scanFor,
+            unitName: unit.unitName,
+          },
         },
-      },
-    };
+        "Duplicate item scanned for order!",
+      );
+    }
+
+    return successResponse(detailsWithoutOrderData, "Item found!");
+  } catch (error) {
+    console.error(error);
+    return failureResponse(
+      "unexpected db error during get item with advanfe frorm ",
+    );
   }
-
-  return {
-    msg: "item found",
-
-    data: detailsWithoutOrderData,
-  };
 };
